@@ -1,0 +1,16 @@
+<apex:page sidebar="false" showHeader="false" standardStylesheets="false" controller="c_DefaultTemplate" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">
+    <html>
+        <head>
+            <title>Title</title>
+        </head>
+        <body>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/profile/">My Details</a></li>
+                <li><a href="/overview/">Subscriptions</a></li>
+                <li><a href="/contact/">Contact</a></li>
+            </ul>
+            <apex:outputText value="{!output}" escape="false" />
+        </body>
+    </html>
+</apex:page>

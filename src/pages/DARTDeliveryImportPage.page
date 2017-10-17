@@ -1,0 +1,87 @@
+<apex:page doctype="html-5.0" showHeader="true" sidebar="false" title="DFP Delivery Import With Date Range">
+    <style>
+        body.hasMotif {
+            margin: 0 !important;
+        }
+    </style>
+    <script src="/soap/ajax/35.0/connection.js"></script>
+    <script src="/soap/ajax/35.0/apex.js"></script>
+    <script type="text/javascript">
+         function doRun(){
+               try{
+                    sforce.sessionId = '{!$Api.Session_ID}';
+                    sforce.connection.sessionId=sforce.sessionId;
+                    var result = sforce.apex.execute("DARTDeliveryWS","processImportDelivery",{}); 
+                    alert(result);
+               }catch(e){
+                    alert('JS ERROR: '+e);
+               }
+          }
+          function doRunRSD(){
+                try{
+                    sforce.sessionId = '{!$Api.Session_ID}';
+                    sforce.connection.sessionId=sforce.sessionId;
+                    var result = sforce.apex.execute("DARTDeliveryWS","processImportDeliveryRS_Daily",{}); 
+                    alert(result);
+                }catch(e){
+                    alert('JS ERROR: '+e);
+                }
+          }
+          
+          function doRunRSM(){
+                try{
+                    sforce.sessionId = '{!$Api.Session_ID}';
+                    sforce.connection.sessionId=sforce.sessionId;
+                    var result = sforce.apex.execute("DARTDeliveryWS","processImportDeliveryRS_Monthly",{}); 
+                    alert(result);
+                }catch(e){
+                    alert('JS ERROR: '+e);
+                }
+          }
+          
+          function doRunAllRSM(){
+                try{
+                    sforce.sessionId = '{!$Api.Session_ID}';
+                    sforce.connection.sessionId=sforce.sessionId;
+                    var result = sforce.apex.execute("DARTDeliveryWS","processImportDeliveryRS_All",{}); 
+                    alert(result);
+                }catch(e){
+                    alert('JS ERROR: '+e);
+                }
+          }
+    </script>
+    <div id="divImportDelivery" class="bRelatedList">
+        <div class="listRelatedObject homeBlock">
+            <div class="bPageBlock brandSecondaryBrd secondaryPalette">
+                <div class="pbHeader">
+                    <table border="0" cellpadding="0" cellspacing="0">
+                        <tbody>
+                            <tr>
+                                <td class="pbTitle">
+                                    <img title="" class="minWidth" alt="" src="/s.gif" height="1" width="1"/>
+                                    <img title="" class="relatedListIcon" alt="" src="/s.gif"/>
+                                    <h3 id="divImportDelivery_title">Delivery Import</h3>
+                                </td>
+                                <td class="pbButton">
+                                    <input title="Import OLI" onclick="doRun(); return false;" name="doRunOLI" class="btn" value="Import OLI" type="button"/>
+                                </td>
+                                <td class="pbButton">
+                                    <input title="Import delivery per day" onclick="doRunRSD(); return false;" name="doRunRSD" class="btn" value="Import Metrics" type="button"/>
+                                </td>
+                                <td class="pbButton">
+                                    <input title="Import delivery for total period" onclick="doRunRSM(); return false;" name="doRunRSM" class="btn" value="Import Revenue Items" type="button"/>
+                                </td>
+                                <td class="pbButton">
+                                    <input title="Imports all impressions & clicks for current and previous month" onclick="doRunAllRSM(); return false;" name="doRunRSM" class="btn" value="Import All" type="button"/>
+                                </td>
+                                <td width="30%"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <apex:include pageName="PG_DFPImportByDateRange"/>
+        </div>
+        <!-- End ListElement -->
+    </div>
+</apex:page>

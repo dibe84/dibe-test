@@ -1,0 +1,371 @@
+<apex:page standardController="Account" extensions="PGC_FreespeePopup" showHeader="false" standardStylesheets="false" applyHtmlTag="false">
+  	<html>
+  		<head>
+  			<title>Call Tracking</title>
+  			<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0"/>
+	    	<script src="{!URLFOR($Resource.libs, 'jquery/dist/jquery.js')}"></script>
+	    	<style>
+	    		*{ box-sizing: border-box; }
+	    		body {
+	    			font-family: Arial;
+	    			margin: 0;
+	    			padding: 0;
+	    			font-size: 14px;
+	    		}
+	    		html, body {
+	    			height: 100%;
+	    			width: 100%;
+	    		}
+	    		.container {
+	    			width: 100%;
+	    			height: 100%;
+	    			display: table;
+	    		}
+	    		.contentWrapper {
+	    			display: -webkit-box;
+				    display: -webkit-flex;
+				    display: -ms-flexbox;
+				    display: flex;
+				    -webkit-box-orient: vertical;
+				    -webkit-box-direction: normal;
+				    -webkit-flex-direction: column;
+				    -ms-flex-direction: column;
+				    flex-direction: column;
+				    -webkit-box-pack: center;
+				    -webkit-justify-content: center;
+				    -ms-flex-pack: center;
+				    justify-content: center;
+				    height: 100%;
+				    padding-top: 15px;
+				    padding-bottom: 15px;
+	    		}
+	    		.containerBox {
+    				width: 100%;
+    				padding: 15px;
+    				max-width: 440px;
+    				margin: 0 auto;
+    				display: table;
+	    		}
+	    		.setLeft {
+	    			float: left;
+	    		}
+	    		.setRight {
+	    			float: right;
+	    		}
+	    		.fullWidth {
+	    			width: 100%;
+	    		}
+	    		.spacingTop {
+	    			margin-top: 15px;
+	    		}
+	    		.col1of2 {
+	    			width: 50%;
+	    		}
+	    		.pl {
+	    			padding-left: 15px;
+	    		}
+	    		.pr {
+	    			padding-right: 15px;
+	    		}
+	    		.rightMe {
+	    			text-align: right;
+	    		}
+	    		.centerMe {
+	    			text-align: center;
+	    		}
+	    		input[type="text"] {
+	    			border: 1px solid #ccc;
+				    padding: 7px 10px;
+				    border-radius: 2px;
+				    width: 100%;
+				    outline: none !important;
+				    font-size: 14px !important;
+	    		}
+	    		.buttonWrapper {
+	    			display: table;
+    				margin: 0 auto;
+	    		}
+	    		.btnBox {
+	    			float: left;
+	    		} 
+	    		.btn {
+	    			float: left;
+	    			width: 100%;
+	    			border: 1px solid #d8dde6;
+    				background-color: #fff;
+    				padding: 7px 10px;
+    				transition: background-color .5s;
+    				background-color: #fff;
+    				color: #005fb2;
+    				outline: none !important;
+    				font-size: 14px !important;
+    				border-radius: 2px;
+    				white-space: nowrap;
+    				overflow: hidden;
+    				text-overflow: ellipsis;
+    				cursor: pointer;
+	    		}
+	    		.btn:hover {
+	    			background-color: #f4f6f9;
+	    		}
+	    		.ptLabel {
+	    			padding-top: 9px;
+	    		}
+	    		.spacingTopLg {
+	    			margin-top: 30px;
+	    		}
+	    		.btnPrimary {
+	    			color: #fff;
+	    			background-color: #0070d2;
+    				border: 1px solid #0070d2;
+	    		}
+	    		.btnPrimary:hover {
+	    			background-color: #005fb2;
+	    		}
+	    		.btnDisabled {
+	    			pointer-events: none;
+	    			opacity: .5;
+	    		}
+	    		.isLoading img {
+	    			width: 50px;
+				    position: fixed;
+				    left: 0;
+				    right: 0;
+				    margin: 0 auto;
+				    top: 50%;
+				    margin-top: -25px;
+	    		}
+	    		.isLoading .labelLoading {
+	    			position: fixed;
+				    top: 10%;
+				    left: 10%;
+	    		}
+	    		.errorMessage {
+	    			color: #f00000;
+	    		}
+	    	</style>
+  		</head>
+  		<body>
+  			<div class="container">
+  				<div class="contentWrapper">
+  					<apex:form id="callTracking" styleClass="setLeft fullWidth">
+  						<apex:actionFunction name="doCreate" action="{!doCreate}" rerender="errHidden, errOutput, trackedNumberHidden" oncomplete="doAfterComplete('create');"/>
+  						<apex:actionFunction name="doDelete" action="{!doDelete}" rerender="errHidden, errOutput" oncomplete="doAfterComplete('delete');"/>
+  						<apex:inputHidden value="{!err}" id="errHidden"/>
+  						<apex:inputHidden value="{!trackedNumber}" id="trackedNumberHidden"/>
+  						
+  						<!-- Retrieving/Deleting -->
+  						<div class="isLoading loading stepLoading" style="display: none;">
+  							<div class="labelLoading"></div>
+  							<img src="{!URLFOR($Resource.lightning_component, 'assets/images/spinners/slds_spinner_brand.gif')}" alt="Loading" />
+  						</div>
+  						
+  						<!-- HOME -->
+	  					<div class="containerBox stepHome">
+	  						<div class="setLeft fullWidth">
+	  							Please comfirm the email address and phone number you want to use for phone tracking:
+	  						</div>
+	  						<div class="setLeft fullWidth spacingTopLg">
+	  							<div class="setLeft col1of2 pr rightMe ptLabel">
+	  								Contact Email:
+	  							</div>
+	  							<div class="setLeft col1of2">
+	  								<apex:inputField html-disabled="disabled" styleClass="textInput" value="{!Account.Portal_User__r.Email}" />
+	  							</div>
+	  						</div>
+	  						<div class="setLeft fullWidth spacingTop">
+	  							<div class="setLeft col1of2 pr rightMe ptLabel">
+	  								Account phone number:
+	  							</div>
+	  							<div class="setLeft col1of2">
+	  								<apex:inputField html-disabled="disabled" styleClass="textInput" value="{!Account.Phone}" />
+	  							</div>
+	  						</div>
+	  						<div class="setLeft fullWidth spacingTop">
+	  							<div class="setLeft col1of2 pr rightMe ptLabel">
+	  								Call tracking phone number:
+	  							</div>
+	  							<div class="setLeft col1of2">
+	  								<apex:inputField html-disabled="disabled" styleClass="textInput" value="{!Account.CallTrackingPhoneNumber__c}" />
+	  							</div>
+	  						</div>
+	  						<div class="setLeft fullWidth spacingTopLg errorMessage">
+	  							<apex:outputText rendered="{!IF(isEnable, false, true)}">
+	  								Please be aware that only Automobile.it accounts should be used.
+	  							</apex:outputText>
+	  						</div>
+	  						<div class="setLeft fullWidth spacingTopLg">
+	  							<div class="buttonWrapper">
+		  							<div class="btnBox pr">
+		  								<apex:commandButton styleClass="btn btnCancel" value="Cancel" />
+		  							</div>
+		  							<div class="btnBox pr">
+		  								<apex:commandButton styleClass="btn btnPrimary btnNext {!IF(AND(isEnable, Account.Phone != '', Account.Phone != null, ISBLANK(Account.CallTrackingPhoneNumber__c)), '', 'btnDisabled')}" value="Next" />
+		  							</div>
+		  							<div class="btnBox">
+		  								<apex:commandButton styleClass="btn btnPrimary btnDelete {!IF(OR(Account.CallTrackingPhoneNumber__c == '' || Account.CallTrackingPhoneNumber__c == null),'btnDisabled','')}" value="Delete tracking number" />
+		  							</div>
+	  							</div>
+	  						</div>
+	  					</div>
+	  					
+	  					<!-- CREATE DONE -->
+	  					<div class="containerBox stepCreateDone" style="display: none;">
+	  						<div class="setLeft fullWidth">
+	  							The new phone tracking number has been saved, and can be seen below:
+	  						</div>
+	  						<div class="setLeft fullWidth" style="margin-top: 15%;">
+	  							<div class="setLeft col1of2 pr rightMe ptLabel">
+	  								Call tracking phone number:
+	  							</div>
+	  							<div class="setLeft col1of2">
+	  								<apex:inputField html-disabled="disabled" styleClass="textInput trackedDone" value="{!Account.CallTrackingPhoneNumber__c}" />
+	  							</div>
+	  						</div>
+	  						<div class="setLeft fullWidth spacingTopLg centerMe" style="margin-top: 20%;">
+	  							<div class="buttonWrapper">
+	  								<apex:commandButton styleClass="btn btnPrimary btnClose" value="Close" style="float: none; width: auto;"/>
+	  							</div>
+	  						</div>
+	  					</div>
+	  					
+	  					<!-- ERROR FOR CREATE/DELETE -->
+	  					<div class="containerBox stepError" style="display: none;">
+	  						<div class="setLeft fullWidth">
+	  							Error:
+	  						</div>
+	  						<div class="setLeft fullWidth" style="margin-top: 15%;">
+	  							<div class="setLeft errorMessage fullWidth">
+	  								<apex:outputPanel id="errOutput">{!err}</apex:outputPanel>
+	  							</div>
+	  						</div>
+	  						<div class="setLeft fullWidth spacingTopLg centerMe" style="margin-top: 20%;">
+	  							<div class="buttonWrapper">
+		  							<div class="btnBox pr">
+		  								<apex:commandButton styleClass="btn btnBackFromErr" value="Back" style="float: none; width: auto;"/>
+		  							</div>
+		  							<div class="btnBox">
+		  								<apex:commandButton styleClass="btn btnPrimary btnRetry" value="Retry" />
+		  							</div>
+	  							</div>
+	  						</div>
+	  					</div>
+	  					
+	  					<!-- CONFIRM DELETE -->
+	  					<div class="containerBox stepConfirmDelete" style="display: none;">
+	  						<div class="setLeft fullWidth" style="margin-top: 15%;">
+	  							<div class="setLeft errorMessage fullWidth">
+	  								Are you sure you want to delete the call tracking number?<br/>This will remove the call tracking functionlity for the customer.
+	  							</div>
+	  						</div>
+	  						<div class="setLeft fullWidth spacingTopLg centerMe" style="margin-top: 20%;">
+	  							<div class="buttonWrapper">
+		  							<div class="btnBox pr">
+		  								<apex:commandButton styleClass="btn btnBackFromDelete" value="Back" style="float: none; width: auto;"/>
+		  							</div>
+		  							<div class="btnBox">
+		  								<apex:commandButton styleClass="btn btnPrimary btnConfirmDelete" value="Confirm" />
+		  							</div>
+	  							</div>
+	  						</div>
+	  					</div>
+	  					
+	  					<!-- DELETE DONE-->
+	  					<div class="containerBox stepDeleted" style="display: none;">
+	  						<div class="setLeft fullWidth" style="margin-top: 15%;">
+	  							<div class="setLeft fullWidth">
+	  								Delete Successful!
+	  							</div>
+	  						</div>
+	  						<div class="setLeft fullWidth spacingTopLg centerMe" style="margin-top: 20%;">
+	  							<div class="buttonWrapper">
+		  							<div class="btnBox">
+		  								<apex:commandButton styleClass="btn btnPrimary btnClose" value="Close" />
+		  							</div>
+	  							</div>
+	  						</div>
+	  					</div>
+					</apex:form>
+  				</div>
+  			</div>
+  			<script>
+  				var currentAction;
+  				function goNextStep(st){
+					$('.containerBox, .loading').hide();
+					$('.step'+st).show();
+				}
+				
+				function doAfterComplete(action){
+					currentAction = action;
+					var err = $('[id$=":errHidden"]').val();
+					if(err) {
+						goNextStep('Error');
+					} else {
+						if(action == 'create') {
+							var trackNum = $('[id$=":trackedNumberHidden"]').val();
+							$('.trackedDone').val(trackNum);
+							
+							goNextStep('CreateDone');
+						} else if (action == 'delete') {
+							goNextStep('Deleted');
+						}
+					}
+				}
+				
+  				$(document).ready(function(){
+  					goNextStep('Home');
+  					
+  					// HOME BUTTONS
+  					$('.btnNext').off('click').on('click', function(){
+  						$('.labelLoading').text('Retrieving...');
+  						goNextStep('Loading');
+  						doCreate(); // ACTION FUNCTION CALLED
+  						return false;//To stop event reload of input submit
+  					});
+  					$('.btnDelete').off('click').on('click', function(){
+  						goNextStep('ConfirmDelete');
+  						return false;//To stop event reload of input submit
+  					});
+  					$('.btnCancel').off('click').on('click', function(){
+  						window.close();
+  					});
+  					
+					// OTHER BUTTONS
+  					$('.btnClose').off('click').on('click', function(){
+  						window.opener.location.href = "{!redirectURL}";
+  						window.close();
+  						return false;//To stop event reload of input submit
+  					});
+  					
+  					$('.btnBackFromErr').off('click').on('click', function(){
+  						goNextStep('Home');
+  						return false;//To stop event reload of input submit
+  					});
+  					
+  					$('.btnRetry').off('click').on('click', function(){
+  						goNextStep('Loading');
+  						if(currentAction == 'create') {
+  							doCreate();
+  						} else if(currentAction == 'delete') {
+  							doDelete();
+  						}
+  						return false;//To stop event reload of input submit
+  					});
+  					$('.btnBackFromDelete').off('click').on('click', function(){
+  						goNextStep('Home');
+  						return false;//To stop event reload of input submit
+  					});
+  					$('.btnConfirmDelete').off('click').on('click', function(){
+  						$('.labelLoading').text('Deleting...');
+  						goNextStep('Loading');
+  						doDelete();
+  						return false;//To stop event reload of input submit
+  					});
+  				});
+  				
+  				
+  				
+  			</script>
+  		</body>
+  	</html>
+</apex:page>

@@ -1,0 +1,13 @@
+<!-- CD-553 - Booked & delivered revenue charts on account layout -->
+
+<apex:page standardcontroller="Account" extensions="CHART_AccountRevenue" showheader="false" action="{!getAgencyBookedRevenueAmountYoY}">
+
+    <apex:outputLabel style="font-weight:bold;margin-left:8%;font-size:18px;" value="Agency Booked Revenue, Year over Year" rendered="{!chartBuilder.datas.size>0}" />
+    
+    <apex:chart width="400" height="190" data="{!chartBuilder.datas}">
+        <apex:axis type="Category" position="bottom" fields="xData" title="Year" />
+        <apex:axis type="Numeric" position="left" fields="yData1" title="Revenue" />
+        <apex:barSeries title="{!chartBuilder.chartTitle1}" orientation="vertical" axis="left" xField="xData" yField="yData1" />
+   </apex:chart>
+
+</apex:page>

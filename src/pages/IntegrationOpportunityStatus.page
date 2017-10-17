@@ -1,0 +1,84 @@
+<apex:page standardController="Opportunity" 
+wizard="false" 
+showQuickActionVfHeader="false" 
+cache="false" 
+standardStylesheets="false" 
+showHeader="false" 
+setup="false" 
+showChat="false" 
+sidebar="false" 
+applyHtmlTag="false" 
+applyBodyTag="false">
+    <html>
+        <head>
+            <style>
+                #loadingFirstLoad{
+                    position: fixed;
+                    width: 100px;
+                    height: 100px;
+                    top: 50%;
+                    margin-top: -50px;
+                    z-index: 10000;
+                    left: 0;
+                    right: 0;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                #loadingFirstLoad img{
+                    width: 100%;
+                }
+                #lightning{
+                    overflow-y: auto;
+                    margin: 0 auto;
+                }
+                .embeddedWrapper{
+                    height: 100%;
+                    overflow: hidden;
+                }
+                .embeddedWrapper body{
+                    height: 100%;
+                   
+                }
+            </style>
+            <script src="{!URLFOR($Resource.libs, 'jquery/dist/jquery.js')}"></script>
+        </head>
+        <body>
+            <div id="loadingFirstLoad">
+                <img src="{!URLFOR($Resource.lightning_component, 'assets/images/spinners/slds_spinner_brand.gif')}" alt="Loading Conponent" />
+            </div>
+            <apex:includeLightning />
+        
+            <div id="lightning"></div>
+            
+            <script>
+               
+                console.log($Lightning);   
+                
+                $Lightning.use("c:IntegrationStatus", function() {
+                    $Lightning.createComponent("c:IntegrationStatusView",
+                    { recordId : "{!opportunity.id}", authToken : "{!$Api.Session_ID}", objType:"Opprtunity" },
+                     "lightning", function(cmp) {
+                            // do some stuff
+                            //document.getElementById('loadingFirstLoad').style.display = 'none';
+                            $('#loadingFirstLoad').hide();
+                         
+                                $('.embedHidden').hide().removeClass('slds-active');
+                                $('.embedActive').addClass('slds-active');
+                                $('.embedBlockActive').removeClass('slds-hide').addClass('slds-show');
+                                $('.embedChange').each(function(){
+                                    if($(this).text().toLowerCase() == 'add'){
+                                        $(this).text('Search your products');
+                                    }
+                                    if($(this).text().toLowerCase() == 'configure'){
+                                        $(this).text('Standard Ads');
+                                    }
+                                });
+                                $('html').addClass('embeddedWrapper');
+                           
+                     });
+                });
+
+            </script>
+        </body>
+    </html>
+</apex:page>

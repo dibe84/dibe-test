@@ -1,0 +1,199 @@
+<apex:page standardController="Opportunity" extensions="AdSalesIOExtension" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderas="pdf">
+<head>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_ECGDK.css')}"/>
+</head>
+<body>
+    <div class="header">
+        <table border="0" cellspacing="0" cellpadding="0" width="100%" id="table1">
+            <tr>
+                <td class="title">
+                        ADVERTISING ORDER FORM<br/>
+                </td>
+              <td class="right">
+                    <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_ECGDK_BB.jpg')}" title="logo" width="120px"/>
+                </td>
+            </tr>
+        </table>
+      </div>
+      <div class="footer">
+
+                  <div>Side <span class="pagenumber"/> af <span class="pagecount"/></div>
+
+      </div>
+
+    <!-- advertiser and Account manager information -->
+    <table border="0" width="100%" class="orderHeader">
+        <tr>
+            <td style="text-align:left;vertical-align:top" width="50%">
+                Kampagne: {!Opportunity.Name} <br /><br/>
+                Annoncør: <br/>
+                {!Opportunity.Account.Name} <br/>
+                {!Opportunity.Account.BillingStreet},
+                {!Opportunity.Account.BillingCity}
+                {!Opportunity.Account.BillingPostalCode}
+                ,{!Opportunity.Account.BillingCountry} <br/><br />
+
+                Bureau: {!Opportunity.Agency__r.Name} <br /><br />
+
+                Regning til: <br/>
+                {!Opportunity.Billing_Account__r.Name} <br/>
+                {!Opportunity.Billing_Account__r.BillingStreet},
+                {!Opportunity.Billing_Account__r.BillingCity}
+                {!Opportunity.Billing_Account__r.BillingPostalCode},
+                {!Opportunity.Billing_Account__r.BillingCountry} <br/><br/>
+
+                Primær kontaktperson <br/>
+                Name: {!Opportunity.Primary_Contact__r.FirstName} {!Opportunity.Primary_Contact__r.LastName} <br />
+                Telefonnummer: {!Opportunity.Primary_Contact__r.Phone} <br />
+                Fax: {!Opportunity.Primary_Contact__r.Fax} <br />
+                E-mail: {!Opportunity.Primary_Contact__r.Email} <br />
+                Adresse: {!Opportunity.Primary_Contact__r.MailingStreet}, {!Opportunity.Primary_Contact__r.MailingCity} {!Opportunity.Primary_Contact__r.MailingPostalcode}, {!Opportunity.Primary_Contact__r.MailingCountry} <br />
+            </td>
+            <td class="" width="50%" style="text-align:right;vertical-align:top">
+                <b><span class="bold">Bil Markedet ApS</span></b><br/>
+                Axel Kiers Vej 11<br/>
+                8270 Højbjerg<br/>
+                CVR: 20618175 <br/>
+                Gironr.: <br/>
+                Nordea Bankkonto: <br/> <br/>
+                Salg kontakt: {!Opportunity.Owner.FirstName} {!Opportunity.Owner.LastName} <br/>
+                E-mail: {!Opportunity.Owner.Email} <br/>
+                Telefonnummer: {!Opportunity.Owner.Phone} <br /> <br />
+                <b><span class="bold">Ordrebekræftelse: {!Opportunity.IOnumber__c}</span></b> <br/>
+            </td>
+        </tr>
+    </table>
+
+    <br/>
+    <br/>
+
+    <!-- Line items -->
+    <table  class="lineitems" id="table_lineitems">
+        <tr>
+            <th width="35%"><b>Beskrivelse</b></th>
+            <th width="10%"><b>Start</b></th>
+            <th width="10%"><b>Slut</b></th>
+
+            <th width="10%"><b>Kategori</b></th>
+            <th width="10%" class="right"><b>Mængde</b></th>
+            <th width="10%" class="right"><b>Sats (DKK)</b></th>
+            <th width="15%" class="right"><b>Total (DKK)</b></th>
+        </tr>
+
+        <apex:repeat var="oli" value="{!sortrecord}" >
+        <tr class="thinbottomborder">
+            <td class="thinbottomborder">{!oli.DefaultLineDescription__c}</td>
+
+            <td class="thinbottomborder">{!month(oli.from_Date__c)}/{!day(oli.from_Date__c)}/{!year(oli.from_Date__c)}</td>
+            <td class="thinbottomborder">{!month(oli.until_Date__c)}/{!day(oli.until_Date__c)}/{!year(oli.until_Date__c)}</td>
+
+            <td class="thinbottomborder">{!oli.Billing_Category__c}</td>
+            <td class="thinbottomborder right">
+                <c:LocalNumber my_Number="{!oli.Quantity}" />
+            </td>
+
+            <td class="thinbottomborder right">
+                <c:LocalNumber my_Number="{!oli.SalesPriceBeforeID__c}" />
+            </td>
+            <td class="thinbottomborder right">
+                <c:LocalNumber my_Number="{!oli.TotalAmountBeforeID__c}" />
+            </td>
+
+        </tr>
+        </apex:repeat>
+
+        <tr>
+            <td colspan="4"></td>
+            <td colspan="2" class="right thinbottomborder"><b>SUB total</b></td>
+            <td class="right thinbottomborder">
+                <c:LocalNumber my_Number="{!Opportunity.TotalAmountBeforeID__c}" />
+            </td>
+        </tr>
+        <apex:outputPanel rendered="{!Opportunity.IndirectDiscount__c>0}" layout="none">
+        <tr>
+            <td colspan="4"></td>
+            <td colspan="2" class="right thinbottomborder"><b>Bureau provision ({!Opportunity.IndirectDiscount__c}%)</b></td>
+            <td class="right thinbottomborder">
+                <c:LocalNumber my_Number="{!Opportunity.IndirectDiscountAmount__c}" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4"></td>
+            <td colspan="2" class="right thinbottomborder"><b>Total ekskl. moms</b></td>
+            <td class="right thinbottomborder">
+                <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c}" />
+            </td>
+        </tr>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!Opportunity.Billing_Account__r.Apply_VAT__c}" layout="none">
+        <tr>
+            <td colspan="4"></td>
+            <td colspan="2" class="right thinbottomborder"><b>Moms ({!Opportunity.Billing_Account__r.VAT__c}%)</b></td>
+            <td class="right thinbottomborder">
+                <c:LocalNumber my_Number="{!Opportunity.VatAmount__c}" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4"></td>
+            <td colspan="2" class="right thinbottomborder"><b>Total inklusive moms</b></td>
+            <td class="right thinbottomborder">
+                <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c+Opportunity.VatAmount__c}" />
+            </td>
+        </tr>
+        </apex:outputPanel>
+
+    </table><!-- End Line items -->
+    <br/>
+    <br/>
+    <!-- Notes -->
+    <table  class="lineitems" id="table_notes">
+        <tr>
+            <th width="35%"><b><span class="bold">Noter</span></b></th>
+        </tr>
+
+        <tr >
+            <td >{!Opportunity.Description}</td>
+        </tr>
+    </table>
+    <!-- End Notes -->
+
+    <br/>
+    <br/>
+
+    <!-- Contract Acknowledgment -->
+    <table class="lineitems" id="table_ContractAck">
+        <tr>
+            <th width="100%"><b><span class="bold">Bekræftelse af kontrakt</span></b></th>
+        </tr>
+        <tr>
+            <td width="100%">Denne ordrebekræftelse er mellem eBay Classifieds Group, DK (DBA ) og annoncør. Indholdet udgør sammen med vedlagte Standardvilkår og –betingelser for Annoncering for erhvervskunder, den fulde aftale og forståelse mellem parterne som denne ordrebekræftelse omhandler, og erstatter derved alle forudgående diskussioner, aftaler og forståelser af enhver karakter. Denne aftale er bindende for begge parter ved annoncørens underskrift nedenfor, hvilken demonstrerer accept af standardvilkår og – betingelser for annoncering for erhvervskunder og det tilbud, som eBay Classifieds Group, Danmark har fremlagt.</td>
+        </tr>
+    </table>
+    <div style="page-break-before:always;"/>
+    <!-- End Contract Acknowledgment -->
+    <table width="100%" id="table5" class="signature">
+        <tr>
+            <th colspan="2"><b><span class="bold">Kunde</span></b></th>
+        </tr>
+        <tr>
+            <td><b><span class="bold">Navn med blokbogstaver:</span></b></td>
+            <td>{{_es_signer_fullname}}</td>
+        </tr>
+        <tr>
+            <td><b><span class="bold">Underskrift:</span></b></td>
+            <td class="echosign_container">{{_es_signer_signature}}</td>
+            <td/>
+            <td/>
+        </tr>
+        <tr>
+            <td><b><span class="bold">Dato:</span></b></td>
+            <td class="echosign_container" >{{_es_signer_date}}</td>
+            <td/>
+            <td/>
+        </tr>
+
+    </table>
+
+</body>
+</apex:page>

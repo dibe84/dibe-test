@@ -1,0 +1,4 @@
+<apex:page standardStylesheets="false" sidebar="false" showHeader="false" controller="c_ExceptionController">
+    Exception: <pre>{!errorMessage}</pre><br />
+    Stack: <pre>{!strackTrace}</pre>
+</apex:page>

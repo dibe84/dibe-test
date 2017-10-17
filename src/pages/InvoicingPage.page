@@ -1,0 +1,46 @@
+<apex:page controller="PGC_InvoicingMemberUnit" title="Invoice: Billing Dashboard" sidebar="true" showheader="true">
+    
+    <apex:sectionHeader title="Billing Dashboard" />
+    <apex:pageMessages />
+    
+    <script>
+
+        var memberUnitId = "{!memberUnitId}";
+        
+        function setMemberUnitId( pMemberUnitId ){
+            memberUnitId = pMemberUnitId;
+            checkOpenInvoices();
+            checkPendingInvoiceBatches();
+            checkInvoiceBatchHistory(); 
+        }
+        
+        window.onload = function(){ setMemberUnitId( memberUnitId ); };
+    
+    </script>
+    
+    <apex:pageBlock title="Member Unit" id="memberUnitPB" rendered="{!allowMUSelect}">
+    
+        <apex:form >
+
+	        <apex:selectList label="Member" value="{!memberUnitId}" multiselect="false" size="1" onchange="setMemberUnitId( this.value );"> 
+	            <apex:selectOptions value="{!memberUnitItems}" />
+	            <apex:actionSupport event="onchange" action="{!refreshInvoicingComps}" reRender="compsOP"/>
+	        </apex:selectList>
+
+    	</apex:form>            
+
+    </apex:pageBlock>
+    
+    <apex:outputPanel id="compsOP">
+    
+        <apex:outputPanel >
+    
+		    <c:SendInvoices />
+		    <c:InvoicingPendingSend />
+		    <c:InvoicingBatchHistoryList />
+	
+	    </apex:outputPanel>
+	    
+	</apex:outputPanel>
+    
+</apex:page>

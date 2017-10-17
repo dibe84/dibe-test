@@ -1,0 +1,73 @@
+<apex:page showHeader="true" sidebar="true" controller="PGC_AdjustRevenueDates" docType="html-5.0">
+	<apex:form id="form">
+	  	<apex:pageMessages id="showmsg"></apex:pageMessages>
+		<apex:pageBlock rendered="{!revs != null}" title="Revenue Items" id="revTable">
+	  		<apex:pageBlockTable value="{!revs}" var="rev" rowClasses="odd,even" styleClass="tableClass">
+				<apex:column >
+					<apex:facet name="header">Name</apex:facet>
+					<a href="/{!rev.Id}" target="_blank">{!rev.name}</a>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">Product</apex:facet>
+					<apex:outputField value="{!rev.Description__c}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">From Date</apex:facet>
+					<apex:inputField value="{!rev.From_Date__c}" />
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">Until Date</apex:facet>
+					<apex:inputField value="{!rev.Until_Date__c}" />
+				</apex:column>
+				<apex:column style="text-align: center;">
+					<apex:facet name="header">Sales Price Net</apex:facet>
+					<apex:outputField value="{!rev.UnitPrice__c}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">Current status</apex:facet>
+					<apex:outputField value="{!rev.Status__c}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">Pending status-sync</apex:facet>
+					<apex:outputField value="{!rev.OutOfSync__c}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">Local Booking Id</apex:facet>
+					<apex:outputField value="{!rev.LocalBookingId__c}"/>
+				</apex:column>
+			</apex:pageBlockTable>
+			<apex:pageBlockButtons location="bottom">
+				<apex:actionStatus id="saveButton">
+					<apex:facet name="stop">
+						<apex:commandButton action="{!save}" value="Save" reRender="form" status="saveButton" />
+					</apex:facet>
+					<apex:facet name="start">
+						<apex:outputPanel >
+							<apex:image value="/img/loading32.gif" style="height: 15px;"/>
+						</apex:outputPanel>
+					</apex:facet>
+				</apex:actionStatus>
+			</apex:pageBlockButtons>
+		</apex:pageBlock>
+		<apex:pageBlock rendered="{!revs != null}" title="Additional information">
+			<apex:pageBlockTable value="{!agreements}" var="agr" rowClasses="odd,even" styleClass="tableClass">
+				<apex:column >
+					<apex:facet name="header">Name</apex:facet>
+					<a href="/{!agr.Id}" target="_blank">{!agr.name}</a>
+				</apex:column>
+				<apex:column style="text-align: center;">
+					<apex:facet name="header">Contract sent date</apex:facet>
+					<apex:outputField value="{!agr.echosign_dev1__DateSent__c}"/>
+				</apex:column>
+				<apex:column style="text-align: center;">
+					<apex:facet name="header">Contract signed date</apex:facet>
+					<apex:outputField value="{!agr.echosign_dev1__DateSigned__c}"/>
+				</apex:column>
+				<apex:column style="text-align: center;">
+					<apex:facet name="header">View</apex:facet>
+					<apex:outputText escape="false" value="{!agr.echosign_dev1__Document__c}"></apex:outputText>
+				</apex:column>
+			</apex:pageBlockTable>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

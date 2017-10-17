@@ -1,0 +1,231 @@
+<apex:page showHeader="true" sidebar="true" controller="PGC_PermissionViewer">
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.js"></script>
+	<script type="text/javascript" src="/resource/1459499386000/Chosen/chosen.jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/resource/1459499386000/Chosen/chosen.min.css" />
+	<style type="text/css">
+		span.link {
+			color: black;
+			font-weight: bold;
+		}
+		span.link:hover {
+			text-decoration: underline;
+		}
+		.bPageBlock .pbTitle {
+			width: 80%;
+
+		}
+	</style>
+	<script type="text/javascript">
+		function viewFields(objName) {
+			var ids = [];
+
+			$("select[name='items_to_show'] option:selected").each(function() {
+				ids.push($(this).val());
+			});
+			Visualforce.remoting.Manager.invokeAction(
+				'{!$RemoteAction.PGC_PermissionViewer.getObject}',
+				objName,
+				ids,
+				function(result, event){
+					console.log('result', result, event);
+
+					renderResults(objName, result);
+				},
+				{escape: true}
+			);
+		}
+
+		function renderResults(objName, data) {
+			var objTableField = $("td[id*=':j_id12']").filter(function() { return $(this).html() == objName; });
+			var parentTr = objTableField.parent('tr');
+
+			var fieldTable = $("<table class='list tableClass' border='0' cellpadding='0' cellspacing='0'></table>");
+			var headerTr = $("<tr class='headerRow'></tr>");
+			headerTr.append($("<th>Field Name</th>"));
+			headerTr.append($("<th>Field Label</th>"));
+			headerTr.append($("<th>Read</th>"));
+			headerTr.append($("<th>Write</th>"));
+			fieldTable.append(headerTr);
+			for (var i = 0; i < data.fields.length; i++) {
+				var fieldTr = $("<tr class='dataRow " + (i%2==0 ? 'odd' : 'even') +"'></tr>");
+				fieldTr.append($("<td></td>").html(data.fields[i].name));
+				fieldTr.append($("<td></td>").html(data.fields[i].label));
+				if (data.fields[i].r.sources.length > 0) {
+					var sourceNames = [];
+					for (var j = 0; j < data.fields[i].r.sources.length; j++) {
+						sourceNames.push(data.fields[i].r.sources[j].name);
+					}
+					fieldTr.append(
+						$("<td></td>")
+							.append($("<div></div>")
+								.attr('title', sourceNames.join(','))
+								.css({
+									'background-color': 'green',
+									'color': 'white',
+									'text-align': 'center'
+								})
+								.html(data.fields[i].r.sources.length)
+							)
+						);
+				} else {
+					fieldTr.append(
+						$("<td></td>")
+							.append($("<div></div>")
+								.css({
+									'background-color': 'red'
+								})
+								.html('&nbsp;')
+							)
+						);
+				}
+
+				if (data.fields[i].w.sources.length > 0) {
+					var sourceNames = [];
+					for (var j = 0; j < data.fields[i].w.sources.length; j++) {
+						sourceNames.push(data.fields[i].w.sources[j].name);
+					}
+					fieldTr.append(
+						$("<td></td>")
+							.append($("<div></div>")
+								.attr('title', sourceNames.join(','))
+								.css({
+									'background-color': 'green',
+									'color': 'white',
+									'text-align': 'center'
+								})
+								.html(data.fields[i].w.sources.length)
+							)
+						);
+				} else {
+					fieldTr.append(
+						$("<td></td>")
+							.append($("<div></div>")
+								.css({
+									'background-color': 'red'
+								})
+								.html('&nbsp;')
+							)
+						);
+				}
+				fieldTable.append(fieldTr);
+			}
+
+			// append our table
+			parentTr.after($("<tr></tr>").append($("<td colspan='12'></td>").append(fieldTable)));
+		}
+
+		function go() {
+			var ids = [];
+
+			$("select[name='items_to_show'] option:selected").each(function() {
+				ids.push($(this).val());
+			});
+			window.location.href = '/apex/PermissionViewer?id=' + ids.join(',') + '&objectType='+$("select[name='object_type'] option:selected").val();
+		}
+
+		$(document).ready(function() {
+			var selectedIds = {!selectedIdsJSON};
+			for (var i = 0; i < selectedIds.length; i++) {
+				$("select[name='items_to_show'] option[value='"+selectedIds[i]+"']").attr('selected', true);
+			}
+
+			var objectType = '{!objectType}';
+			$("select[name='object_type'] option[value='"+objectType+"']").attr('selected', true);
+
+			$("select[name='items_to_show']").chosen({width: "85%"});
+			$("select[name='object_type']").chosen({width: "10%"});
+		});
+	</script>
+	<apex:pageBlock title="Items to show" id="itemsToShow">
+		<select name="object_type" class="chosen-select" data-placeholder="Show objects" style="width">
+			<option value="all">All objects</option>
+			<option value="nonsetup">Non-setup objects</option>
+			<option value="nonsetupnonmanaged">Non-setup objects, without managed pkgs</option>
+			<option value="nonsetupnonmanagednoncs">Non-setup objects, without managed pkgs, no custom settings</option>
+			<option value="assigned">Assigned only</option>
+		</select>
+		<select name="items_to_show" class="chosen-select" data-placeholder="Items to combine" multiple="true" taxindex="-1" style="width: 100%;" >
+		<apex:repeat value="{!options}" var="type">
+			<optgroup label="{!type}">
+			<apex:repeat value="{!options[type]}" var="label">
+				<option value="{!options[type][label]}">
+					{!label}
+				</option>
+			</apex:repeat>
+			</optgroup>
+		</apex:repeat>
+		</select>
+		<button onclick="go(); return false;">Go!</button>
+	</apex:pageBlock>
+	<apex:pageBlock title="Object Permissions for: {!selectedIdsAsString}" id="status">
+		<apex:pageBlockTable value="{!objectList}" var="obj" id="objectTable" rowClasses="odd,even" styleClass="tableClass">
+			<apex:column >
+				<apex:facet name="header">Object Label</apex:facet>
+				<apex:outputText value="{!obj.label}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Object Name</apex:facet>
+				<apex:outputText value="{!obj.name}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Object Type</apex:facet>
+				<apex:outputText value="{!obj.type}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">C</apex:facet>
+				<apex:outputText value="{!obj.c.html}" escape="false"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">R</apex:facet>
+				<apex:outputText value="{!obj.r.html}" escape="false"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">U</apex:facet>
+				<apex:outputText value="{!obj.u.html}" escape="false"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">D</apex:facet>
+				<apex:outputText value="{!obj.d.html}" escape="false"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">V</apex:facet>
+				<apex:outputText value="{!obj.v.html}" escape="false"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">W</apex:facet>
+				<apex:outputText value="{!obj.w.html}" escape="false"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header"># fields</apex:facet>
+				<apex:outputText value="{!obj.totalNumberOfFields}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header"># readable</apex:facet>
+				<apex:outputText value="{!obj.readNumberOfFields}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header"># writeable</apex:facet>
+				<apex:outputText value="{!obj.writeNumberOfFields}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Fields</apex:facet>
+				<apex:outputText >
+					<span class="link" onclick="viewFields('{!obj.name}'); return false">[View fields]</span>
+				</apex:outputText>
+			</apex:column>
+		</apex:pageBlockTable>
+	</apex:pageBlock>
+	<apex:pageBlock title="System Permissions for: {!selectedIdsAsString}" id="permission">
+		<apex:pageBlockTable value="{!systemPermissionList}" var="perm" id="permissionTable" rowClasses="odd,even" styleClass="tableClass">
+			<apex:column >
+				<apex:facet name="header">Name</apex:facet>
+				<apex:outputText value="{!perm.name}"/>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Status</apex:facet>
+				<apex:outputText value="{!perm.value.html}" escape="false"/>
+			</apex:column>
+		</apex:pageBlockTable>
+	</apex:pageBlock>
+
+</apex:page>

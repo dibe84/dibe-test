@@ -1,0 +1,4 @@
+<apex:page standardController="Account" title="Payments" sidebar="true" showheader="true">
+    <apex:pageMessages />
+    <c:PaymentList />
+</apex:page>

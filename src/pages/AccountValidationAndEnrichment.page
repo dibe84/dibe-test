@@ -1,0 +1,39 @@
+<apex:page standardController="Account" extensions="PGC_AccountValidationAndEnrichment" tabStyle="Account">
+    <apex:outputPanel id="messages" >
+        <apex:pageMessages />
+    </apex:outputPanel>
+    <apex:form >
+        <apex:pageblock id="fields">
+            <apex:pageBlockSection columns="2"  title="Payment Method / VAT Details" collapsible="false" >
+                <apex:selectList value="{!acct.Billing_Preference__c}" multiselect="false" size="1" >
+                    <apex:selectOptions value="{!activePaymentMethods}" />
+                    <apex:actionSupport event="onchange" action="{!rerender}" rerender="bankDetails" status="savestatus"/>
+                </apex:selectList>
+                <apex:inputField value="{!acct.Company_VAT_No__c}" />
+            </apex:pageBlockSection>
+            <apex:pageBlockSection id="bankDetails" columns="1" >
+                <apex:inputField label="IBAN" value="{!acct.Bank_AccountNumber__c}" rendered="{!bankDetailsActive}" />
+                <apex:inputField value="{!acct.Bank_Name__c}" rendered="{!bankDetailsActive}"/>
+                <apex:outputField value="{!acct.Mandate__c}" rendered="{!bankDetailsActive}"/>
+                <apex:outputText label="Mandate Bank Account Number" value="{!md.Bank_AccountNumber__c}" rendered="{!bankDetailsActive}"/>
+                <apex:outputText label="Mandate Status" value="{!getMandateStatus}" rendered="{!bankDetailsActive}" />
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons location="bottom" >
+                <apex:actionStatus id="savestatus">
+                    <apex:facet name="stop"> 
+                        <apex:commandButton value="Validate & Save" action="{!validateAndSave}" reRender="fields, messages" status="savestatus"/>
+                    </apex:facet>
+                    <apex:facet name="start">
+                        <apex:outputPanel > 
+                            <apex:image value="/img/loading32.gif" style="height: 15px;"/>
+                            <apex:commandButton value="Processing..." disabled="true"/>
+                        </apex:outputPanel>
+                    </apex:facet>
+                </apex:actionStatus>
+            </apex:pageBlockButtons>
+        </apex:pageblock>
+    </apex:form>
+    <script>
+        setFocus = function() { return; }
+    </script>
+</apex:page>

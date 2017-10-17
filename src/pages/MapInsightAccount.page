@@ -1,0 +1,8 @@
+<apex:page standardController="Account" extensions="MapInsight_AccountController">
+    <c:MapInsight presetLocations="{!presetLocations}" 
+                  presetObjectSetting="{!presetObjectSetting}"
+                  presetRecordSetting="{!presetRecordSetting}"
+                  presetMetricSetting="{!presetMetricSetting}"
+                  presetCountrySetting="{!presetCountrySetting}"
+                  presetRegionSetting="{!presetRegionSetting}"></c:MapInsight>
+</apex:page>

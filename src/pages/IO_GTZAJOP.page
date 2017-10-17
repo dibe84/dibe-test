@@ -1,0 +1,234 @@
+<apex:page standardController="Opportunity" extensions="AdSalesIOExtension" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderAs="pdf">
+<html>
+    <head>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_GTZAGAU.css')}"/>
+    </head>
+
+    <body>
+        <div class="footer">
+            <table border="0" bgcolor="#38341F" cellspacing="0" cellpadding="0" width="100%" id="table2">
+                <tr>
+                    <td class="left mainHeader bold">
+                        <apex:outputText rendered="{!memberAcc != null}">
+                        {!memberAcc.Phone}<br/>
+                        {!memberAcc.Email__c}<br/>
+                        {!memberAcc.Website}<br/>
+                        Office Hours : 08.00 - 16.00
+                        </apex:outputText>
+                    </td>
+                    <td class="right mainHeader bold">
+                        <apex:outputText rendered="{!memberAcc != null}">
+                        Registered in South Africa No. 2013/136737/10<br/>
+                        VAT Registration No. {!memberAcc.Company_VAT_No__c}
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div>
+            <table border="0" bgcolor="#38341F" cellspacing="0" cellpadding="0" width="100%" id="table1">
+                <tr>
+                    <td>
+                        <img src="{!URLFOR($Resource.pdfStyles,'img/Gumtree-NewLogo-Horizontal-01.png')}" title="logo" width="120px"/>
+                    </td>
+                    <td class="right mainHeader">
+                        Marktplaats BV, The Netherlands<br/>
+                        Convention Tower Mezzanine<br/>
+                        Level 1 &amp; 2, Cnr Heerengracht Street and Walter Sisulu Ave Foreshore<br/>
+                        Cape Town 8001
+                    </td>
+                </tr>
+            </table>
+            <br/>
+
+            <!-- advertiser and Account manager information -->
+            <table class="darkFont" width="100%">
+                <tr>
+                    <td colspan="4" class="left sectionHeader thintopborder thinbottomborder"><b>Advertiser Details</b></td>
+                </tr>
+                <tr>
+                    <td class="left fieldLabelTD thinbottomborder" width="23%"><b>Advertiser Name:</b></td>
+                    <td class="left fieldValueTD thinbottomborder" width="77%" colspan="3">{!Opportunity.Account.Name}</td>
+                </tr>
+                <tr>
+                    <td class="left fieldLabelTD thinbottomborder"><b>Full Address:</b></td>
+                    <td class="fieldValueTD thinbottomborder" colspan="3">{!Opportunity.Account.BillingStreet}, {!Opportunity.Account.BillingCity} {!Opportunity.Account.BillingPostalCode},{!Opportunity.Account.BillingCountry}</td>
+                </tr>
+                <tr>
+                    <td class="left fieldLabelTD thinbottomborder"><b>Telephone:</b></td>
+                    <td class="fieldValueTD thinbottomborder">{!Opportunity.Account.Phone}</td>
+                    <td class="left fieldLabelTD thinbottomborder thinleftborder"><b>Web Site:</b></td>
+                    <td class="fieldValueTD thinbottomborder">{!Opportunity.Account.Website}</td>
+                </tr>
+                <tr>
+                    <td class="left fieldLabelTD thinbottomborder"><b>VAT Number:</b></td>
+                    <td class="fieldValueTD thinbottomborder" width="25%">{!Opportunity.Account.Company_VAT_No__c}</td>
+                    <td class="left fieldLabelTD thinleftborder thinbottomborder"><b>Business Registration Number:</b></td>
+                    <td class="fieldValueTD thinbottomborder" width="25%">{!Opportunity.Account.Company_Reg_No__c}</td>
+                </tr>
+                
+            </table>        
+
+            <br/>
+
+            <table class="darkFont" width="100%" >
+            
+                <tr>
+                    <td colspan="6" class="left sectionHeader thinbottomborder thintopborder">Contact Person Details</td>
+                </tr>
+                <tr>
+                    <td class="left fieldLabelTD thinbottomborder" width="13%"><b>Contact Person:</b></td>
+                    <td class="fieldValueTD thinbottomborder" width="40%" colspan="2">{!Opportunity.Primary_Contact__r.FirstName} {!Opportunity.Primary_Contact__r.LastName}</td>
+                    <td class="left fieldLabelTD thinleftborder thinbottomborder" width="13%"><b>Designation:</b></td>
+                    <td class="fieldValueTD thinbottomborder" width="34%" colspan="2">{!Opportunity.Primary_Contact__r.Salutation}</td>
+                </tr>
+                <tr>
+                    <td class="left fieldLabelTD thinbottomborder" width="13%"><b>Email:</b></td>
+                    <td class="fieldValueTD thinbottomborder" width="21%">{!Opportunity.Primary_Contact__r.Email}</td>
+                    <td class="left fieldLabelTD thinleftborder thinbottomborder" width="13%"><b>Telephone:</b></td>
+                    <td class="fieldValueTD thinbottomborder" width="20%">{!Opportunity.Primary_Contact__r.Phone}</td>
+                    <td class="left fieldLabelTD thinleftborder thinbottomborder" width="13%"><b>Cellphone Number:</b></td>
+                    <td class="fieldValueTD thinbottomborder" width="20%">{!Opportunity.Primary_Contact__r.MobilePhone}</td>
+                </tr>
+
+            </table>
+
+            <br/>
+
+            <table class="darkFont" width="100%" >
+            
+                <tr>
+                    <td colspan="6" class="left sectionHeader thinbottomborder thintopborder">Billing Person Details</td>
+                </tr>
+                <tr>
+                    <td class="left fieldLabelTD thinbottomborder" width="13%"><b>Contact Person:</b></td>
+                    <td class="fieldValueTD thinleftborder thinbottomborder" width="40%" colspan="2">{!Opportunity.Account.Finance_contact__r.FirstName} {!Opportunity.Account.Finance_contact__r.LastName}</td>
+                    <td class="left fieldLabelTD thinleftborder thinbottomborder" width="13%"><b>Designation:</b></td>
+                    <td class="fieldValueTD thinleftborder thinbottomborder" width="34%" colspan="2">{!Opportunity.Account.Finance_contact__r.Salutation}</td>
+                </tr>
+                <tr>
+                    <td class="left fieldLabelTD thinbottomborder" width="13%"><b>Email:</b></td>
+                    <td class="fieldValueTD thinleftborder thinbottomborder" width="21%">{!Opportunity.Account.Finance_contact__r.Email}</td>
+                    <td class="left fieldLabelTD thinleftborder thinbottomborder" width="13%"><b>Telephone:</b></td>
+                    <td class="fieldValueTD thinbottomborder" width="20%">{!Opportunity.Account.Finance_contact__r.Phone}</td>
+                    <td class="left fieldLabelTD thinleftborder thinbottomborder" width="13%"><b>Cellphone Number:</b></td>
+                    <td class="fieldValueTD thinleftborder thinbottomborder" width="20%">{!Opportunity.Account.Finance_contact__r.MobilePhone}</td>
+                </tr>
+
+            </table>
+
+            <br/>
+
+            <!-- Line items -->
+            <table class="darkFont" id="table_lineitems">
+            
+                <tr>
+                    <td colspan="4" width="100%" class="left sectionHeader thintopborder thinbottomborder"><b>Package Details</b></td>
+                </tr>
+
+                <tr colspan="4" width="100%">
+                    <td colspan="4"></td>
+                </tr>
+
+                <tr colspan="4" width="100%">
+                    <td colspan="4"></td>
+                </tr>
+
+                <tr class="thintopborder thinbottomborder">
+                    <th width="50%" class="thintopborder thinbottomborder" style="text-align:left;"><b>Product Name</b></th>
+                    <th class="whiteth thinleftborder thintopborder thinbottomborder" width="20%" style="text-align:right;"><b>Start Date</b></th>
+                    <th class="whiteth thinleftborder thintopborder thinbottomborder" width="15%" style="text-align:right;"><b>Quantity</b></th>
+                    <th class="whiteth thinleftborder thintopborder thinbottomborder" width="15%" style="text-align:right;"><b>Rate per Month</b></th>
+                </tr>
+
+                <apex:repeat var="oli" value="{!sortrecord}" >
+                    <tr>
+                        <td style="text-align:left;">{!oli.DefaultLineDescription__c}</td>
+                        <td class="thinleftborder" style="text-align:right;"><apex:outputText value="{0,date,dd-MM-yyyy}"> <apex:param value="{!oli.from_Date__c}" /> </apex:outputText></td>
+                        <td class="thinleftborder" style="text-align:right;">{!oli.Quantity}</td>
+                        <td class="thinleftborder" style="text-align:right;">
+                            <c:LocalNumber my_Number="{!oli.TotalAmountNet__c}" />
+                        </td>
+                    </tr>
+                </apex:repeat>
+
+                <tr colspan="4" width="100%">
+                    <td class="thinbottomborder" colspan="4"></td>
+                </tr>
+
+                <tr>
+                    <td colspan="2"></td>
+                    <td colspan="1" class="right"><b>Monthly Totals</b></td>
+                    <td colspan="1" class="right"><apex:outputField value="{!Opportunity.TotalAmountNet__c}"/></td>
+                </tr>
+                
+                <tr>
+                    <td colspan="3" style="font-weight: bold;"><br/>Note: Prices shown are exclusive of VAT</td>
+                </tr>
+
+            </table>
+
+            <br/>
+            <!-- General Comments: -->
+            <table  class="darkFont" id="table_notes">
+                <tr>
+                    <th class="sectionHeader thinbottomborder thintopborder" width="35%" style="font-weight: bold;">General Comments:</th>
+                </tr>
+
+                <tr >
+                    <td>{!Opportunity.Description}</td>
+                </tr>
+            </table>
+            <!-- End Notes -->
+
+            <br/>
+            <br/>
+
+            <!-- Contract Acknowledgment -->
+            <table class="darkFont" id="table_ContractAck">
+                <tr>
+                    <th class="sectionHeader thintopborder thinbottomborder" width="100%" style="font-weight: bold;">Insertion Order Acknowledgment</th>
+                </tr>
+                <tr>
+                    <td width="100%"><i>This Insertion Order (including the attached Package Details) is governed by the attached terms and conditions, together with any written nondisclosure agreement previously executed by the parties. This Insertion Order is between Marktplaats B.V (“Company”) and Advertiser. This Insertion Order must first be presented to Advertiser, and shall thereafter be binding upon both parties upon Advertiser’s signature below, which demonstrates acceptance of the terms and conditions of the Insertion Order and the commercial offer given by Company. Company consents to electronic transmission (e-mail, fax or otherwise) as acceptable means to constitute a written acceptance of an authorized person for Advertiser.</i><br/></td>
+                </tr>
+
+                <tr>
+                    <td> Please read the terms and conditions and sign in the appropriate signature box.<br/><br/> </td>
+                </tr>
+            </table>
+            <!-- End Contract Acknowledgment -->
+
+            <table width="100%" class="darkFont" id="table5">
+
+                <tr>
+                    <td width="30%">Advertiser (Full Corporate Name):</td>
+                    <td width="70%"><apex:outputField value="{!Opportunity.Account.Name}"/></td>
+                </tr>
+                <tr>
+                    <td width="15%">Signature:</td>
+                    <td class="echosign_container">{{_es_signer_signature}}</td>
+                </tr>
+                <tr>
+                    <td>Print Name:</td>
+                    <td>{{_es_signer_fullname}}</td>
+                </tr>
+                <tr>
+                    <td>Print Title:</td>
+                    <td class="echosign_container">{{*_es_signer_title}}</td>
+                </tr>
+                <tr>
+                    <td>Date:</td>
+                    <td class="echosign_container" >{{_es_signer_date}}</td>
+                </tr>
+                <tr>
+                    <td>I have the authority to bind Advertiser.<br/><br/> </td>
+                </tr>
+
+            </table>
+        </div>
+    </body>
+</html>
+</apex:page>

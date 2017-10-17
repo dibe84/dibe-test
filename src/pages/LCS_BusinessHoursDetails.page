@@ -1,0 +1,43 @@
+<apex:page id="thePage" standardStylesheets="false" setup="false" controller="LCS_BusinessHoursDetailsController" >
+
+<style>
+    .contentWrapper{
+        margin : 80px;
+    }
+</style>
+
+<apex:form id="theForm">
+    
+    <div class="contentWrapper">
+
+    <apex:pageBlock id="thePageBlock" title="Business Hours Details" >
+    
+        <apex:pageMessages id="theMessages"/> 
+        
+        <apex:pageBlockButtons location="bottom">
+            <apex:commandButton value="{!IF(devSetting.Value__c=='Active', 'Deactivate','Activate')}"  action="{!updateStatus}"  reRender="thePageBlock"/>
+        </apex:pageBlockButtons>
+        
+        <apex:pageBlockSection >
+        
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel >All Active Sites</apex:outputLabel>
+                <apex:selectList value="{!curSite}" size="1">
+                    <apex:selectOptions value="{!lstActiveSites}" />
+                    <apex:actionSupport event="onchange" action="{!initDevSetting}" rerender="thePageBlock" />
+                </apex:selectList>
+            </apex:pageBlockSectionItem>
+            
+             <apex:pageBlockSectionItem >
+                    <apex:outputLabel >Status</apex:outputLabel>
+                    <apex:outputField value="{!devSetting.Value__c}" />
+            </apex:pageBlockSectionItem>
+            
+        </apex:pageBlockSection>
+    
+    </apex:pageBlock>
+    </div>
+</apex:form>
+
+
+</apex:page>

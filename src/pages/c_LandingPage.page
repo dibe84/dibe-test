@@ -1,0 +1,3 @@
+<apex:page sidebar="false" showHeader="false" standardStylesheets="false">
+    Landing page {!$User.Username} {!$Api.Session_ID}
+</apex:page>

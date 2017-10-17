@@ -1,0 +1,100 @@
+<apex:page standardController="echosign_dev1__SIGN_Agreement__c" extensions="PGC_MandateExtension" showHeader="false"
+           applyHtmlTag="false" applyBodyTag="false" renderas="pdf">
+    <head>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_ECITA.css')}" html-media="print"/>
+    </head>
+    <body>
+    <div class="header">
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_ECITA.jpg')}" title="logo" style="float:right"/>
+        Marktplaats B.V. Wibautstraat 224, 1097 DN Amsterdam, Paesi Bassi
+    </div>
+    <div class="footer">
+
+        <div>Pagina <span class="pagenumber"/> di <span class="pagecount"/></div>
+
+    </div>
+    <div class="content">
+        <h1>Mandato per addebito diretto SEPA</h1>
+        <h2>
+            Riferimento del mandato: {!echosign_dev1__SIGN_Agreement__c.Mandate_id__c}<br/>
+            (da indicare a cura del creditore)
+        </h2>
+        <p>
+            La sottoscrizione del presente mandato comporta (A) l’autorizzazione a Marktplaats B.V. a richiedere alla
+            banca del
+            debitore l’addebito del suo conto e (B) l’autorizzazione alla banca del debitore di procedere a tale
+            addebito
+            conformemente alle disposizioni impartite da Marktplaats B.V.
+        </p>
+        <p>
+            Il debitore ha diritto di ottenere il rimborso dalla propria Banca secondo gli accordi ed alle condizioni
+            che regolano il rapporto con quest’ultima. Se del caso, il rimborso deve essere richiesto nel termine di 8
+            settimane a decorrere dalla data di addebito in conto.
+        </p>
+
+        <table class="dotted_border">
+            <tr>
+                <th colspan="4">Informazioni sul pagatore</th>
+            </tr>
+            <tr>
+                <td>Nome del/i debitore/i</td>
+                <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Name}</td>
+                <td>Partita IVA</td>
+                <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Company_VAT_No__c}</td>
+            </tr>
+            <tr>
+                <td>Tel.</td>
+                <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Phone}</td>
+                <td>Numero del conto (IBAN)</td>
+                <td>{{*BankAccountNumber_es_signer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}}</td>
+            </tr>
+            <tr>
+                <td>Indirizzo</td>
+                <td rowspan="2">{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingStreet}
+                    <br/>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingCity} {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingPostalcode}
+                    <br/> {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingCountry}</td>
+            </tr>
+        </table>
+        <br/>
+        <table class="dotted_border">
+            <tr>
+                <th colspan="2">Informazioni sul creditore</th>
+            </tr>
+            <tr>
+                <td>Nome del creditore:</td>
+                <td>Marktplaats B.V.</td>
+            </tr>
+            <tr>
+                <td>Indirizzo</td>
+                <td>Wibautstraat 224, 1097 DN Amsterdam, Paesi Bassi</td>
+            </tr>
+            <tr>
+                <td>IBAN</td>
+                <td>GB09CHAS60924241312288</td>
+            </tr>
+        </table>
+        <p>
+            Nota: I diritti del sottoscrittore del presente mandato sono indicati nella documentazione ottenibile dalla
+            propria banca.
+        </p>
+
+        <h2 style="text-align:left">SEPA mandato di addebito diretto da parte del titolare del conto con la
+            presente {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Name}, si prega di contattare</h2>
+        <table class="dotted_border">
+            <tr>
+                <td>Nome:</td>
+                <td class="echosign_container">{{_es_signer_fullname}}</td>
+            </tr>
+            <tr>
+                <td>Data:</td>
+                <td class="echosign_container">{{_es_signer_date}}</td>
+            </tr>
+            <tr>
+                <td>Firma:</td>
+                <td class="echosign_container">{{_es_signer_signature}}</td>
+            </tr>
+        </table>
+    </div>
+    </body>
+</apex:page>

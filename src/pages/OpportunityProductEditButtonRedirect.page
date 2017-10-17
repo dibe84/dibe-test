@@ -1,0 +1,2 @@
+<apex:page standardcontroller="OpportunityLineItem" extensions="PGC_OpportunityProductEditButtonRedirect" action="{!redirect}">
+</apex:page>

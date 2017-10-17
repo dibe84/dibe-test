@@ -1,0 +1,18 @@
+<apex:page sidebar="false" showHeader="false" standardStylesheets="false" controller="c_DefaultOverviewController">
+    {!currentContact.Name} Current subscriptions:
+    <table>
+        <tr>
+            <th>Subscription Type</th>
+            <th>Start date</th>
+            <th>End date</th>
+        </tr>
+        <apex:repeat value="{!activeSubscriptions}" var="as">
+        <tr>
+            <td>{!as.name}</td>
+            <td><apex:outputText value="{0, date, MMMM d','  yyyy}"><apex:param value="{!as.startDate}" /> </apex:outputText></td>
+            <td><apex:outputText value="{0, date, MMMM d','  yyyy}"><apex:param value="{!as.endDate}" /> </apex:outputText></td>
+        </tr>
+        </apex:repeat>
+    </table>
+    <a href="/order/">Order new subscription</a>
+</apex:page>

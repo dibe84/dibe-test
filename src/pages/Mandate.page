@@ -1,0 +1,100 @@
+<apex:page standardController="echosign_dev1__SIGN_Agreement__c" extensions="PGC_MandateExtension" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderas="pdf">
+<head>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_EBAYK.css')}" html-media="print"/>
+</head>
+<body>
+    <div class="header">
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_EBAYK.jpg')}" title="logo" width="32%" style="float:right"/>
+        Marktplaats B.V. Wibautstraat 224, 1097 DN Amsterdam, Niederlande
+    </div>
+
+    <div class="footer">
+                <div>Pagina <span class="pagenumber"/> van <span class="pagecount"/></div>
+    </div>
+
+    <div class="content" >
+    <h1>SEPA-Lastschriftmandat</h1>
+
+    <h3>
+        Mandatsreferenz: {!echosign_dev1__SIGN_Agreement__c.Mandate_id__c}
+    </h3>
+    <h3>
+        Gläubiger-ID: {!echosign_dev1__SIGN_Agreement__c.MemberUnit__r.Creditorid__c}
+    </h3>
+
+    <h3>
+       Marktplaats B.V.
+    </h3>
+    <p>
+    Mit der Unterzeichnung dieses Lastschriftmandats ermächtige ich Marktplaats B.V., Zahlungen von meinem Konto mittels Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die von Marktplaats B.V. auf mein Konto gezogenen Lastschriften einzulösen.
+    </p>
+    <p>
+    Hinweis: Dieses Lastschriftmandat dient nur dem Einzug von Lastschriften, die auf Konten von Unternehmen gezogen sind. Ich bin nicht berechtigt, nach der erfolgten Einlösung eine Erstattung des belasteten Betrages zu verlangen. Ich bin berechtigt, mein Kreditinstitut bis zum Fälligkeitstag anzuweisen, Lastschriften nicht einzulösen.
+    </p>
+    <p>
+    Der Rechnungsbetrag wird automatisch monatlich als wiederkehrende Zahlung von Ihrem Konto abgebucht.
+    </p>
+
+    <table class="solid_border">
+       <tr>
+            <th colspan="4" >Details des Kontoinhabers</th>
+       </tr>
+       <tr>
+        <td>Kontoinhaber:</td>
+        <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Name}</td>
+        <td>USt-ID Nr:</td>
+        <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Company_VAT_No__c}</td>
+       </tr>
+      <tr>
+        <td>Tel:</td>
+        <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Opportunity__r.Primary_Contact__r.Phone}</td>
+    	<td>IBAN:</td>
+        <td>{{*BankAccountNumber_es_signer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}}</td>
+      </tr>
+      <tr>
+        <td>Adresse:</td>
+        <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingStreet}<br/>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingCity} {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingPostalcode}<br/> {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingCountry}</td>
+      </tr>
+    </table>
+    <br />
+    <table class="solid_border">
+        <tr>
+            <th colspan="2" >Gläubigerdetails</th>
+        </tr>
+        <tr>
+            <td>Zahlungsempfänger:</td>
+            <td>Marktplaats B.V.</td>
+        </tr>
+        <tr>
+            <td>Adresse:</td>
+            <td>Wibautstraat 224, 1097 DN Amsterdam, Niederlande</td>
+        </tr>
+        <tr>
+            <td>IBAN:</td>
+            <td>GB31CHAS60956121007524</td>
+        </tr>
+    </table>
+    <br/>
+    eBay Kleinanzeigen wird von Marktplaats B.V. betrieben.
+
+    <div style="page-break-before:always;"/>
+
+    <h2 style="text-align:left">SEPA-Lastschriftmandat hiermit vom Kontoinhaber {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Name} erteilt:</h2>
+    <table class="dotted_border">
+      <tr>
+        <td>Name:</td>
+        <td class="echosign_container">{{_es_signer_fullname}}</td>
+      </tr>
+      <tr>
+        <td>Datum:</td>
+        <td class="echosign_container">{{_es_signer_date}}</td>
+      </tr>
+      <tr>
+        <td>Unterschrift</td>
+        <td class="echosign_container">{{_es_signer_signature}}</td>
+      </tr>
+    </table>
+    </div>
+</body>
+</apex:page>

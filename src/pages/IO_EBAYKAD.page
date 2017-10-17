@@ -1,0 +1,378 @@
+<apex:page standardController="Opportunity" extensions="AdSalesIOExtension" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderas="pdf">
+<head>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_EBAYK.css')}" html-media="print"/>
+    
+    <style type="text/css">
+        .mainheader { background-color: #87b919; font-size: 13px; text-align: center; }
+        @page { size:landscape;  margin-left: 1cm; margin-right: 1cm; }
+        td { font-size: 10px; }
+        .tdcenter { text-align: center; }
+        .thCustom { background-color: #87b919;font-size: 10px; }
+    </style>
+        
+</head>
+
+<body>
+
+    <div class="header" style="margin-bottom: 30px;">
+
+        <table>
+            
+            <tr>
+                <td class="left" width="50%" colspan="3">
+                    <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_EBAYK.jpg')}" title="logo" width="120px"/>
+                </td>
+            </tr>
+            <!-- Basic info -->
+
+
+            <tr>
+                <td class="right bold" width="13%"><b>Ihre Auftragsnummer: </b></td>
+                <td class="left" width="9%"></td>
+                <td class="right bold" width="13%"><b>Unsere Auftragsnummer: </b></td>
+                <td class="left" width="9%">{!Opportunity.IOnumber__c}</td>
+                <td class="right bold" width="13%"><b>Unser Kampagnenname:</b></td>
+                <td class="left" width="21%">{!Opportunity.Name}</td>
+                <td class="right bold" width="13%"><b>Datum: </b></td>
+                <td class="left" width="9%">
+                    <apex:outputText value="{0, date, MMMM d','  yyyy}">
+                        <apex:param value="{!NOW()}" />
+                    </apex:outputText>
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+       
+    <div class="footer">
+    
+        <table>
+            <tr>
+                <td class="left">        
+                <p>eBay Kleinanzeigen GmbH<br/> 
+                       JP Morgan Chase<br/>
+                       <b>IBAN</b>: DE75501108006161520090<br/>
+                       <b>SWIFT Code</b>: CHASDEFX<br/>
+                       <b>Tax Number</b>: 046/114/04846<br/>
+                       <b>VAT ID Number</b>: DE238250605<br/></p>
+                </td>
+                <td class="right">
+                   <p>eBay Kleinanzeigen GmbH<br/> 
+                       Albert-Einstein-Ring 2-6 | 14532 Kleinmachnow , Deutschland<br/> 
+                       <b>Geschäftsführer</b>: Rami Bader,Robert Cassedy,Nina Krüger<br/>
+                       <b>HRB Nr. </b>: 18681 P, Amtsgericht Potsdam<br/> 
+                       <b>Sitz der Gesellschaft</b>: Kleinmachnow</p>
+                   <div>Seite <span class="pagenumber"/> von <span class="pagecount"/></div>    
+                </td>       
+            </tr>  
+
+        </table>           
+ 
+    </div>
+
+    <div class="content" >
+
+            <table border="0" width="100%" id="table_advertiser">
+        
+                <tr>
+                    <td width="25%">
+            
+                        <!-- Customer Information -->
+			            <table border="0" width="100%" id="table_advertiser">
+			
+			                <tr>
+			                    <th class="mainheader" colspan="2"><b>Kundeninformationen</b></th>
+			                </tr>
+			        
+			                <tr>
+			                    <td class="right bold" width="30%"><b>Kunde:</b></td>
+			                    <td width="70%">{!Opportunity.Account.Name}</td>
+			                </tr>
+			                <tr>    
+			                    <td class="right bold"><b>Ansprechpartner:</b></td>
+			                    <td>{!Opportunity.Primary_Contact__r.FirstName} {!Opportunity.Primary_Contact__r.LastName}</td>        
+			                </tr>    
+			                <tr>
+			                    <td class="right bold"><b>Adresse:</b></td>
+			                    <td>{!Opportunity.Account.BillingStreet},
+			                        {!Opportunity.Account.BillingCity}
+			                        {!Opportunity.Account.BillingPostalCode},
+			                        {!Opportunity.Account.BillingCountry}</td>
+			                </tr>
+			                <tr>
+			                    <td class="right bold"><b>Email Adresse:</b></td>
+			                    <td>{!Opportunity.Primary_Contact__r.Email}</td>
+			                </tr>
+			                <tr>    
+			                    <td class="right bold"><b>Telefon:</b></td>
+			                    <td>{!Opportunity.Primary_Contact__r.Phone}</td>
+			                </tr>
+			        
+			            </table>
+			        
+			        </td>
+			        
+                    <td width="25%">
+                
+			            <!-- Billing Information -->
+			            <table border="0" width="100%" id="table_advertiser">
+			
+			                <tr>
+			                    <th class="mainheader" colspan="2"><b>Abrechnungsdaten</b></th>
+			                </tr>
+			        
+			                <tr>
+			                    <td class="right bold" width="30%"><b>Rechnungsempfänger:</b></td>
+			                    <td width="70%">{!Opportunity.Billing_Account__r.Name}</td>
+			                </tr>
+			                <tr>    
+			                    <td class="right bold"><b>Ansprechpartner:</b></td>
+			                    <td>{!Opportunity.Billing_Account__r.Finance_contact__r.FirstName} {!Opportunity.Billing_Account__r.Finance_contact__r.LastName}</td>        
+			                </tr>    
+			                <tr>
+			                    <td class="right bold"><b>Adresse: </b></td>
+			                    <td>{!Opportunity.Billing_Account__r.BillingStreet},
+			                        {!Opportunity.Billing_Account__r.BillingCity}
+			                        {!Opportunity.Billing_Account__r.BillingPostalCode},
+			                        {!Opportunity.Billing_Account__r.BillingCountry}</td>
+			                </tr>
+			                <tr>
+			                    <td class="right bold"><b>Email Adresse:</b></td>
+			                    <td>{!Opportunity.Billing_Account__r.Finance_contact__r.Email}</td>
+			                </tr>
+			                <tr>    
+			                    <td class="right bold"><b>Telefon:</b></td>
+			                    <td>{!Opportunity.Billing_Account__r.Finance_contact__r.Phone}</td>
+			                </tr>
+			        
+			            </table>
+                        
+                    </td>
+                    
+                    <td width="25%">
+        
+			            <!-- Agency Information -->
+			            <table border="0" width="100%" id="table_advertiser">
+			
+			                <tr>
+			                    <th class="mainheader" colspan="2"><b>Agenturinformationen</b></th>
+			                </tr>
+			        
+			                <tr>
+			                    <td class="right bold" width="30%"><b>Agentur:</b></td>
+			                    <td width="70%">{!Opportunity.Agency__r.Name}</td>
+			                </tr>
+			                <tr>
+			                    <td class="right bold"><b>Ansprechpartner: </b></td>
+			                    <td>{!Opportunity.Agency__r.Finance_Contact__r.FirstName} {!Opportunity.Agency__r.Finance_Contact__r.LastName}</td>        
+			                </tr>    
+			                <tr>
+			                    <td class="right bold"><b>Adresse:</b></td>
+			                    <td>{!Opportunity.Agency__r.BillingStreet},
+			                        {!Opportunity.Agency__r.BillingCity}
+			                        {!Opportunity.Agency__r.BillingPostalCode},
+			                        {!Opportunity.Agency__r.BillingCountry}</td>
+			                </tr>
+			                <tr>
+			                    <td class="right bold"><b>Email Adresse:</b></td>
+			                    <td>{!Opportunity.Agency__r.Finance_contact__r.Email}</td>
+			                </tr>
+			                <tr>    
+			                    <td class="right bold"><b>Telefon:</b></td>
+			                    <td>{!Opportunity.Agency__r.Finance_contact__r.Phone}</td>
+			                </tr>
+			        
+			            </table>
+                        
+                    </td>
+                    
+                    <td width="25%">
+            
+			            <!-- Ebay data -->
+			            <table border="0" width="100%" id="table_advertiser">
+			
+			                <tr>
+			                    <th class="mainheader" colspan="2"><b>Kontakt</b></th>
+			                </tr>
+			        
+			                <tr>
+			                    <td class="right bold" width="30%"><b>Ansprechpartner:</b></td>
+			                    <td width="70%">{!Opportunity.Owner.Name}</td>
+			                </tr>
+			                <tr>    
+			                    <td class="right bold"><b>Email Adresse:</b></td>
+			                    <td>{!Opportunity.Owner.Email}</td>        
+			                </tr>    
+			                <tr>
+			                    <td class="right bold"><b>Adresse:</b></td>
+			                    <td>{!Opportunity.Owner.street},
+			                        {!Opportunity.Owner.city}
+			                        {!Opportunity.Owner.postalcode},
+			                        {!Opportunity.Owner.country}</td>
+			                </tr>
+			                <tr>    
+			                    <td class="right bold"><b>Telefon:</b></td>
+			                    <td>{!Opportunity.Owner.Phone}</td>
+			                </tr>
+			        
+			            </table>    
+                        
+                    </td>
+                
+                </tr>
+                
+            </table>    
+        
+            <br/>
+            <hr/>
+            <br/>
+        
+            <!-- Line items -->
+            <table  class="lineitems" id="table_lineitems" style="height:420px;">
+            
+                <tr>
+                    <th width="8%" style="background-color: #87b919;font-size: 10px;"><b>Anfangsdatum</b></th>
+                    <th width="8%" style="background-color: #87b919;font-size: 10px;"><b>Enddatum</b></th>
+                    <th width="17%" style="background-color: #87b919;font-size: 10px;"><b>Rubrik, Werbemittel, Einheit</b></th>
+                    <th width="18%" style="background-color: #87b919;font-size: 10px;"><b>Vereinbarung</b></th>
+                    <th width="10%" style="background-color: #87b919;font-size: 10px;"><b>Preis Brutto</b></th>
+                    <th width="10%" style="background-color: #87b919;font-size: 10px;"><b>Rabatt / Preiszuschl.</b></th>   
+                    <th width="10%" style="background-color: #87b919;font-size: 10px;"><b>Gebuchtes Volumen</b></th>
+                    <th width="7%" style="background-color: #87b919;font-size: 10px;"><b>Kunden-Netto</b></th>
+                    <th width="5%" style="background-color: #87b919;font-size: 10px;"><b>AE</b></th>
+                    <th width="7%" style="background-color: #87b919;font-size: 10px;"><b>Agentur-Netto</b></th>
+                </tr>
+        
+                <apex:repeat var="oli" value="{!sortrecord}" >
+                <tr class="thinbottomborder">
+                    
+                    <td class="thinbottomborder tdcenter">{!month(oli.from_Date__c)}/{!day(oli.from_Date__c)}/{!year(oli.from_Date__c)}</td>
+                    
+                    <td class="thinbottomborder tdcenter">{!month(oli.until_Date__c)}/{!day(oli.until_Date__c)}/{!year(oli.until_Date__c)}</td>
+        
+                    <td class="thinbottomborder">{!oli.DefaultLineDescription__c}</td>
+					
+					<td class="thinbottomborder">{!oli.Description}</td>
+        
+                    <td class="thinbottomborder tdcenter">€ <c:LocalNumber my_Number="{!oli.ListPrice__c}" /></td>
+        
+                    <td class="thinbottomborder tdcenter">{!oli.ListPriceCorrectionPercentage__c} %</td>
+        
+                    <td class="thinbottomborder tdcenter"><apex:outputText value="{0, number, ###,###,###,###}"><apex:param value="{!oli.Quantity}"/></apex:outputText></td>
+                    
+                    <td class="thinbottomborder tdcenter">€ <c:LocalNumber my_Number="{!oli.TotalAmountBeforeID__c}" /></td>
+                    
+                    <td class="thinbottomborder tdcenter"><apex:OutputField value="{!oli.IndirectDiscount__c}"/></td>
+                    
+                    <td class="thinbottomborder right">€ <c:LocalNumber my_Number="{!oli.TotalAmountNet__c}" /></td>
+                </tr>
+                </apex:repeat>
+        
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>Kunden-Netto Gesamt</b></td>
+                    <td colspan="2" class="right thinbottomborder">€ <c:LocalNumber my_Number="{!Opportunity.TotalAmountBeforeID__c}" /></td>
+                </tr>
+                <apex:outputPanel rendered="{!Opportunity.IndirectDiscount__c>0}" layout="none">
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>Agentur Rabatt ({!Opportunity.IndirectDiscount__c}%)</b></td>
+                    <td colspan="2" class="right thinbottomborder">€ <c:LocalNumber my_Number="{!Opportunity.IndirectDiscountAmount__c}" /></td>
+                </tr>
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>Angebotsnetto</b></td>
+                    <td colspan="2" class="right thinbottomborder">€ <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c}" /></td>
+                </tr>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!Opportunity.Billing_Account__r.Apply_VAT__c}" layout="none">
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>USt(19%)</b></td>
+                    <td colspan="2" class="right thinbottomborder">€ <c:LocalNumber my_Number="{!Opportunity.VatAmount__c}" /></td>
+                </tr>
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>Angebotsbrutto</b></td>
+                    <td colspan="2" class="right thinbottomborder">€ <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c+Opportunity.VatAmount__c}" /></td>
+                </tr>
+                </apex:outputPanel>
+        
+            </table><!-- End Line items -->
+
+            <br/>
+
+            <!-- Notes -->
+            <apex:outputPanel rendered="{!NOT(ISNULL(Opportunity.Description))}">
+                <table id="table_notes">
+                    <tr>
+                        <th class="mainheader" width="35%"><b>IO Bemerkungen</b></th>
+                    </tr>
+            
+                    <tr >
+                        <td><p>{!Opportunity.Description}</p></td>
+                    </tr>
+                </table>
+            </apex:outputPanel>    
+            <!-- End Notes -->
+        
+            <br/>
+        
+            <!-- Contract Acknowledgment -->
+            <table id="table_ContractAck">
+                <tr>
+                    <th class="mainheader" width="100%"><b>Vertragsbestätigung</b></th>
+                </tr>
+                <tr>
+                    <td width="100%">
+			            <p style="line-height: 150%;">
+			                Alle vereinbarten Preise verstehen sich rein netto und sind zzgl. Umsatzsteuer an eBay Kleinanzeigen GmbH zu zahlen.<br/> 
+			                Zur Auftragserteilung übersenden Sie bitte dieses Formular unterzeichnet per Mail an DL-ECG-EK-advertising@ebay.com.<br/> 
+			                Das Mindestbuchungsvolumen beträgt 3.500,00 EUR Angebotsnettobetrag.<br/> 
+			                Dieses Angebot ist unverbindlich und freibleibend. Es ist vertraulich zu behandeln und darf nicht gegenüber Dritten offenbart werden.<br/> 
+			                Bitte beachten Sie die rechtlichen Hinweise unter: www.ebay-kleinanzeigen.de/hilfe/artikel/agb
+			            </p>
+                    </td>
+                </tr>
+            </table>
+            <!-- End Contract Acknowledgment -->
+        
+            <br/>
+            <br/>
+        
+            <table width="100%" id="table5">
+        
+                <tr>
+                    <td width="30%">Agentur/Werber (Vollständiger Firmenname): </td>
+                    <td width="80%" class="left"><apex:outputField value="{!Opportunity.Account.Name}"/></td>
+                </tr>
+                <tr>
+                    <td>Angebotsnetto: </td>
+                    <td class="left"><apex:outputText value="{0, number, currency}"><apex:param value="{!Opportunity.TotalAmountNet__c+Opportunity.VatAmount__c}"/></apex:outputText></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>{{_es_signer_fullname}}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="echosign_container">{{*_es_signer_title}}</td>
+                </tr>
+                <tr>
+                    <td>Unterschrift:</td>
+                    <td class="echosign_container">{{_es_signer_signature}}</td>
+                </tr>
+                <tr>
+                    <td>Datum:</td>
+                    <td class="echosign_container" >{{_es_signer_date}}</td>
+                </tr>
+        
+            </table>
+
+        </div>
+    
+    </body>
+    
+</apex:page>

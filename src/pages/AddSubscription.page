@@ -1,0 +1,79 @@
+<apex:page standardcontroller="OpportunityLineItem" extensions="PGC_AddSubscription" action="{!redirect}">
+	<apex:form >
+		<apex:pageblock rendered="{!isTractEnabled}">
+			<apex:pagemessages />
+			<apex:pageblockbuttons location="bottom">
+	           <apex:commandbutton value="Back" action="{!cancel}" />
+	       </apex:pageblockbuttons>
+		</apex:pageblock>
+        <apex:pageblock mode="edit" title="Add/Edit Subscription" id="mainSubscriptionPb" rendered="{!NOT(isTractEnabled)}">
+            <apex:pagemessages />
+			<apex:pageblocksection columns="1" id="olifields">
+				<apex:pageblocksectionitem >
+					<apex:outputlabel for="oppLink" value="Opportunity" />
+					<apex:outputlink id="oppLink" value="/{!opp.Id}">{!opp.Name}</apex:outputlink>
+				</apex:pageblocksectionitem>
+				<apex:selectlist value="{!opp.Pricebook2Id}" multiselect="false" size="1" id="pbooks" rendered="{!oppHasNoProducts}">
+					<apex:selectoptions value="{!pBItems}" />
+					<apex:actionsupport event="onchange" action="{!loadPBEEntries}" rerender="pbentries, calculatedfields, customfields" status="savestatus" />
+				</apex:selectlist>
+				<apex:outputfield value="{!opp.Pricebook2Id}" rendered="{!!oppHasNoProducts}" />
+				<apex:selectlist value="{!oli.PricebookEntryId}" multiselect="false" size="1" id="pbentries">
+					<apex:selectoptions value="{!pBEItems}" />
+					<apex:actionsupport event="onchange" action="{!calculate}" rerender="calculatedfields, olifields, customfields" status="savestatus" />
+				</apex:selectlist>
+				<apex:pageblocksectionitem >
+					<apex:outputlabel value="Contract Discount" />
+					<apex:outputtext value="{!IF(opp.ContractDiscount__c != NULL,opp.ContractDiscount__c,0)} %" />
+				</apex:pageblocksectionitem>
+				<apex:inputfield value="{!oli.BundleSize__c}" rendered="{!oli.PriceCalculator__c != 'UnlimitedFixed'}">
+					<apex:actionsupport event="onchange" action="{!calculate}" rerender="calculatedfields, olifields" status="savestatus" />
+				</apex:inputfield>
+				<apex:inputfield value="{!oli.from_Date__c}">
+					<apex:actionsupport event="onchange" action="{!calculateEndDate}" rerender="untilDate, calculatedfields, olifields" status="savestatus" />
+				</apex:inputfield>
+				<apex:outputfield value="{!oli.until_Date__c}" id="untilDate" />
+            </apex:pageblocksection>
+			<apex:pageblocksection id="calculatedfields" columns="1">
+				<apex:outputfield value="{!oli.ListPrice__c}" />
+				<apex:outputfield value="{!oli.CustomListPrice__c}" />
+				<apex:inputfield value="{!oli.SalesPriceNet__c}" />
+			</apex:pageblocksection>
+			<apex:pageblocksection id="customfields" columns="2">
+				<apex:outputfield value="{!selectedPBE.Description__c}" />
+				<apex:outputfield value="{!selectedPBE.PackageName__c}" />
+				<apex:outputfield value="{!selectedPBE.PackageType__c}" />
+				<apex:outputfield value="{!selectedPBE.SavingsRate__c}" />
+				<apex:outputfield value="{!selectedPBE.IsSpecialPrice__c}" />
+				<apex:outputfield value="{!selectedPBE.IsTopup__c}" />
+				<apex:outputfield value="{!selectedPBE.EnableWebsiteURL__c}" />
+				<apex:outputfield value="{!selectedPBE.NumAds__c}" />
+				<apex:outputfield value="{!selectedPBE.NumBumpUps__c}" />
+				<apex:outputfield value="{!selectedPBE.NumHighlights__c}" />
+				<apex:outputfield value="{!selectedPBE.NumHomepageGallery__c}" />
+				<apex:outputfield value="{!selectedPBE.NumHomepageGallery31__c}" />
+				<apex:outputfield value="{!selectedPBE.NumSRPGallery7__c}" />
+				<apex:outputfield value="{!selectedPBE.NumSRPGallery31__c}" />
+				<apex:outputfield value="{!selectedPBE.NumTopAd7__c}" />
+				<apex:outputfield value="{!selectedPBE.NumTopAd15__c}" />
+				<apex:outputfield value="{!selectedPBE.NumTopAd31__c}" />
+				<apex:outputfield value="{!selectedPBE.NumUrgent__c}" />
+				<apex:outputfield value="{!selectedPBE.NumWebsiteURL__c}" />
+			</apex:pageblocksection>
+            <apex:pageblockbuttons location="bottom">
+                <apex:actionstatus id="savestatus">
+                    <apex:facet name="stop">
+                        <apex:commandbutton value="Save" action="{!save}" status="savestatus" rerender="savestatus,mainSubscriptionPb" />
+                    </apex:facet>
+                    <apex:facet name="start">
+                        <apex:outputpanel >
+                            <apex:image value="/img/loading32.gif" style="height: 15px;" />
+                            <apex:commandbutton value="Processing..." disabled="true" />
+                        </apex:outputpanel>
+                    </apex:facet>
+                </apex:actionstatus>
+                <apex:commandbutton value="Cancel" action="{!cancel}" />
+            </apex:pageblockbuttons>
+        </apex:pageblock>
+    </apex:form>
+</apex:page>

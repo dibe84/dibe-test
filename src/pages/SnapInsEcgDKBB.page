@@ -1,0 +1,49 @@
+<apex:page Language="da" applyHtmlTag="false" applyBodyTag="false" setup="false" showHeader="false" standardStylesheets="false" controller="SnapIns_Controller" id="thePage" >
+<html>
+    <head>
+	    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0"/>
+	    <script src="{!URLFOR($Resource.libs, 'jquery/dist/jquery.js')}"></script>
+	    <link rel="stylesheet" href="{!$Site.Prefix}/s{!$Site.Prefix}-livechat.css" />
+    </head>
+    
+    <body>
+    <apex:variable var="siteDomain" value="{!'https://' & $Site.Domain}"/>
+    <apex:variable var="siteURL" value="{!'https://' & $Site.Domain & $Site.Prefix}"/>
+    <apex:form id="theForm">
+      <apex:inputHidden value="{!jsonObj}" id="jsonObj" />
+      
+    </apex:form>
+    <script type='text/javascript' src='{!siteDomain}/embeddedservice/1.0/esw.min.js'></script>
+    <script type='text/javascript'>
+        var initESW = function(gslbBaseUrl) {
+    		
+    		var sitePrefix = '{!$Site.Prefix}';
+    		sitePrefix = sitePrefix.replace('/','').toUpperCase();
+    		var customSetting = JSON.parse(document.getElementById('thePage:theForm:jsonObj').value);
+    		
+	        embedded_svc.settings.avatarImgURL = '{!siteURL}/s/Profile.svg';
+	        embedded_svc.settings.prechatBackgroundImgURL = '';
+	        embedded_svc.settings.waitingStateBackgroundImgURL = '';
+	        embedded_svc.settings.smallCompanyLogoImgURL = '{!siteURL}/s/Profile.svg';
+	    
+	        embedded_svc.settings.displayHelpButton = true; //Or false
+	        embedded_svc.settings.onlineText = customSetting[sitePrefix+'_OnlineTextButton'];
+	        embedded_svc.settings.offlineText = customSetting[sitePrefix+'_OffLineTextButton'];
+	        embedded_svc.settings.onlineLoadingText = customSetting[sitePrefix+'_StartingText'];
+	        embedded_svc.init('{!siteDomain}', customSetting[sitePrefix+'_UrlChat'] , customSetting[sitePrefix+'_UrlContent'] , '{!siteURL}', customSetting[sitePrefix+'_DeploymentId'], customSetting[sitePrefix+'_OrgId'], customSetting[sitePrefix+'_ButtonId'], '1.0', gslbBaseUrl, '39.0', sitePrefix ,  customSetting[sitePrefix+'_ParentId']); }; if (!window.embedded_svc) { var s = document.createElement('script'); s.setAttribute('src', '{!siteDomain}/embeddedservice/1.0/esw.min.js'); s.onload = function() { initESW(null); }; document.body.appendChild(s);} else { initESW('{!siteDomain}'); }
+	        $(document).ready(function(){
+	        	var parentWrapper = $(window.parent.document);
+	        	parentWrapper.find('.snapInsIframe').css({'max-height':'64px','width':'242px'});
+	        	setInterval(function(){
+	        		if($('.modalContainer.maximizedMobile.embeddedServiceLiveAgentSidebar').is(":visible")){
+	        			parentWrapper.find('.snapInsIframe').css({'max-height':'498px','width':'341px'});
+	        		}else{
+	        			parentWrapper.find('.snapInsIframe').css({'max-height':'64px','width':'242px'});
+	        		}
+	        	}, 50);
+	        });
+    </script>
+    
+    </body>
+</html>
+</apex:page>

@@ -1,0 +1,50 @@
+<apex:page controller="LCS_UpdateRecordOwnerController">
+      <apex:includeScript value="/support/console/34.0/integration.js"/>
+  
+       <script type="text/javascript">
+             //'SFORCE_PRESENCE:WORK_ACCEPTED' 
+             var workAccepted = sforce.console.ConsoleEvent.PRESENCE.WORK_ACCEPTED;
+             sforce.console.addEventListener( workAccepted, function(result){
+                 //{message: "SFORCE_PRESENCE:WORK_ACCEPTED", workId: "xxxxx", workItemId: "xxxxxxxx"}
+                   var workItemId  = result['workItemId'];
+                   var queueName = 'ECGDK_CS_All';
+                	console.log('result==========', result);
+                    /*try{
+                        Visualforce.remoting.Manager.invokeAction(
+                            '{!$RemoteAction.LCS_UpdateRecordOwnerController.updateRecordOwner}',
+                            workItemId,
+                            queueName,
+                            function(result, event){
+                           
+                                if (event.status) {
+                                     if(result['isSuccess'] =='false'){
+                                        console.log( 'update record owner error======', result['Error'] );
+                                     } else {
+                                     
+                                     	 sforce.console.getPrimaryTabIds(function(record){
+                                     	 	if(record.success) {
+                                     	 	  var tabs = record.ids;
+                                     	 	  for(var i=0;i< tabs.length;i++) {
+                                     	 	    	var primaryTabId = tabs[i];
+                                         	 	    sforce.console.refreshPrimaryTabById(primaryTabId, true, function(callBack){
+                                         				//console.log('callBack=====',callBack);
+                                         			});
+                                     	 	  }
+                                     	 	 
+                                     	 	}
+                                     	 });
+                                     }
+                                
+                                }
+                            },
+                            {escape: false}
+                        ); 
+                    
+                    }catch(ex){
+                       console.log('Error========', ex.message); 
+                    }*/
+             });
+      </script>
+	  <body>
+	  </body>
+</apex:page>

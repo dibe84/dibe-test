@@ -1,0 +1,29 @@
+<apex:page controller="FQ_ViewInvoicePDF" sidebar="false" showHeader="false" action="{!loadPDF}">
+        
+<head>
+    <style>
+            #main {  margin: 20px; text-align: center ;padding-top:15px;}   
+            .bPageBlock .message{
+                margin-left: 100px;
+                margin-right: 200px;
+                margin-top: 10px;
+                margin-bottom: 0px;
+            }   
+    </style>
+</head>
+    
+<apex:form >
+    <apex:pageBlock title="Invoice view" mode="edit">
+        <apex:pageMessages />
+        <apex:pageBlockButtons >
+            <apex:commandButton value="close" onclick="window.close();return false;"/>
+        </apex:pageBlockButtons>
+        <apex:outputPanel rendered="{!isSuccess}">
+            <div id="main">           
+                    <iframe width="850" height="900" src="data:application/pdf;base64,{!pdf}"></iframe>                   
+            </div>
+        </apex:outputPanel>
+    </apex:pageBlock>
+ </apex:form>   
+
+</apex:page>

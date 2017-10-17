@@ -1,0 +1,35 @@
+<apex:page standardController="Account" showHeader="true" extensions="PGC_GenerateMandate" action="{!load}" >
+
+    <apex:sectionHeader title="Generate Mandate agreement and Attach PDF" subtitle="{!account.Name}"/>
+    <apex:pagemessages id="messages" />
+ <apex:form >
+     <apex:pageBlock id="disclaimers" >
+	     <apex:outputPanel rendered="{!!ShowErrorMessage && agreement == null }">
+	         <p>
+	         Please select the Member Unit for which the Mandate needs to be generated and press "Generate" to generate the agreement.<br/>
+	         </p>
+	     </apex:outputPanel>
+	     <apex:outputPanel rendered="{!!ShowErrorMessage && agreement != null }">
+	         <p>
+	         Press "Setup Email" to setup an email to the customer with the mandate pdf attached. 
+	         </p>
+	     </apex:outputPanel>
+	 </apex:pageBlock>    
+     <apex:pageBlock id="mandateFormBlock" >
+           <apex:pageblockSection columns="1" collapsible="false" rendered="{!!ShowErrorMessage && agreement == null }">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="Member Unit" rendered="{!agreement == null}"/>
+                        <apex:selectList label="Member Unit" value="{!memberUnitId}" multiselect="false" size="1" rendered="{!agreement == null}">
+                            <apex:selectOptions value="{!memberUnitItems}" />
+                        </apex:selectList>
+                    </apex:pageBlockSectionItem>
+           </apex:pageBlockSection>
+           <apex:pageBlockButtons location="bottom">
+                    <apex:commandButton action="{!createMandate}" value="Generate Agreement" rerender="mandateFormBlock, disclaimers, messages" rendered="{!agreement == null && !ShowErrorMessage}"/>
+                    <apex:commandButton value="Setup email" action="{!attachMandatePdf}" rendered="{!agreement != null}"/>
+                    <apex:commandButton action="{!cancel}" value="Cancel" />
+                    
+           </apex:pageBlockButtons>
+    </apex:pageBlock>
+</apex:form>
+</apex:page>

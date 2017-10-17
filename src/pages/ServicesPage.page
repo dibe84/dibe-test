@@ -1,0 +1,4 @@
+<apex:page standardController="Account" title="Services" sidebar="true" showheader="true" id="thePage" cache="false">
+    <apex:pageMessages />
+    <c:ServicesList id="cServiceList"/>
+</apex:page>

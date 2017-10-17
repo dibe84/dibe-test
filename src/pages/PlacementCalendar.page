@@ -1,0 +1,84 @@
+<apex:page id="PlacementCalendar" title="Placement Calendar" sidebar="true" showheader="true" tabStyle="Opportunity" controller="PGC_PlacementCalendar">
+    <style type="text/css">
+        .greenItem {
+            background-color: #45BB71;
+        }
+        .orangeItem {
+            background-color: #ddb929;
+        }
+        .redItem {
+            background-color: #EA2020;
+        }
+    </style>
+    <apex:form >
+    <apex:pageBlock title="Placement Calendar">
+        <apex:pageMessages id="pageMsgs" />
+        <apex:pageBlockSection columns="1">
+            <apex:outputField value="{!opp.Name}" />
+            <apex:inputField value="{!prod.Placement__c}" required="true" />
+        </apex:pageBlockSection>
+
+        <apex:pageBlockButtons location="bottom" >
+            <apex:actionStatus id="savestatus">
+                <apex:facet name="stop">
+                    <apex:commandButton value="Show Booking Schedule" action="{!buildCalendar}" reRender="pageMsgs,calendar" status="savestatus"/>
+                </apex:facet>
+                <apex:facet name="start">
+                    <apex:outputPanel >
+                        <apex:image value="/img/loading32.gif" style="height: 15px;"/>
+                        <apex:commandButton value="Processing..." disabled="true"/>
+                    </apex:outputPanel>
+                </apex:facet>
+            </apex:actionStatus>
+        </apex:pageBlockButtons>
+    </apex:pageBlock>
+    </apex:form>
+    <apex:form >
+    <apex:pageBlock id="calendar">
+        <apex:pageBlockSection title="Reserved / Sold" columns="1" >
+            <apex:pageBlockTable value="{!calendarItems}" var="item">
+                <apex:column width="150" styleClass="{!item.itemStyleClass}">
+                    <apex:facet name="header">Date</apex:facet>
+                    <apex:outputText value="{0, date, E, MMM d, yyyy}">
+                        <apex:param value="{!item.itemDate}" />
+                    </apex:outputText>
+                </apex:column>
+                <apex:column width="350">
+                    <apex:facet name="header">Reserved</apex:facet>
+                    <apex:outputPanel rendered="{!item.reservedCount == 0}">
+                        {!item.reservedCount}
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!item.reservedCount > 0}">
+                        <table width="100%">
+                            <apex:repeat value="{!item.reservedRevs}" var="revs" >
+                                <tr>
+                                    <td><apex:outputLink value="/{!revs.Opportunity__r.Id}">{!revs.Opportunity__r.Name}</apex:outputLink></td>
+                                    <!--<td><apex:outputLink value="/{!revs.Product__r.Id}">{!revs.Product__r.Name}</apex:outputLink></td>-->
+                                    <td><apex:outputLink value="/{!revs.Opportunity__r.Owner.Id}">{!revs.Opportunity__r.Owner.Name}</apex:outputLink></td>
+                                </tr>
+                            </apex:repeat>
+                        </table>
+                    </apex:outputPanel>
+                </apex:column>
+                <apex:column width="350">
+                    <apex:facet name="header">Sold</apex:facet>
+                    <apex:outputPanel rendered="{!item.soldCount == 0}">
+                        {!item.soldCount}
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!item.soldCount > 0}">
+                        <table width="100%">
+                            <apex:repeat value="{!item.soldRevs}" var="revs" >
+                                <tr>
+                                    <td><apex:outputLink value="/{!revs.Opportunity__r.Id}">{!revs.Opportunity__r.Name}</apex:outputLink></td>
+                                    <!--<td><apex:outputLink value="/{!revs.Product__r.Id}">{!revs.Product__r.Name}</apex:outputLink></td>-->
+                                    <td><apex:outputLink value="/{!revs.Opportunity__r.Owner.Id}">{!revs.Opportunity__r.Owner.Name}</apex:outputLink></td>
+                                </tr>
+                            </apex:repeat>
+                        </table>
+                    </apex:outputPanel>
+                </apex:column>
+            </apex:pageBlockTable>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+    </apex:form>
+</apex:page>

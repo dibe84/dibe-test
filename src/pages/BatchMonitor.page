@@ -1,0 +1,99 @@
+<apex:page showHeader="true" sidebar="true" controller="PGC_BatchMonitor">
+
+		<!-- Here is the css styles that will be used for the progress bars -->
+		<style>
+				.progressBar{
+						border:1px solid #DDDDDD;
+						height: 19px;
+						width: 300px;
+						-moz-border-radius: 5px;
+						-webkit-border-radius: 5px;
+				}
+				.progress{
+						border:1px solid #E78F08;
+						height: 100%;
+						margin: -1px;
+						text-align: center;
+						-moz-border-radius: 5px;
+						-webkit-border-radius: 5px;
+						line-height: 18px;
+				}
+				.BadStatus{
+						border:1px solid #FF55FF;
+						background-color: #CC0000;
+						color: white;
+
+				}
+		</style>
+
+		<apex:form id="batchMonitorForm">
+			<apex:actionPoller rerender="batchMonitorForm" interval="5" action="{!reloadBatchJobs}"/>
+
+		<apex:pageBlock title="Currently running jobs">
+			<apex:outputText value="Last refresh time: {0,date,yyyy.MM.dd 'at' HH:mm:ss z}">
+				<apex:param value="{!lastRefreshTime +(1/gmtOffset)}" />
+			</apex:outputText>
+			<apex:repeat value="{!runningBatchJobsPriorityMap}" var="key">
+				<apex:pageBlockTable value="{!runningBatchJobsPriorityMap[key]}" var="b" id="jobs">
+					<apex:column headerValue="Apex Class" value="{!b.job.ApexClass.Name}" width="20%"/>
+					<apex:column headerValue="Queue" value="{!key}" width="10%"/>
+					<apex:column headerValue="Start date" width="10%">
+						<apex:outputText value="{0,date,dd-MM-yy HH:mm:ss}">
+							<apex:param value="{!b.job.CreatedDate +(1/gmtOffset)}" />
+						</apex:outputText>
+					</apex:column>
+					<apex:column headerValue="Total Batches" value="{!b.job.TotalJobItems}" width="10%"/>
+					<apex:column headerValue="Batches Completed" value="{!b.job.JobItemsProcessed}" width="10%"/>
+					<apex:column headerValue="ExtendedStatus" value="{!b.job.ExtendedStatus}" width="20%"/>
+					<apex:column value="{!b.job.Status}" width="10%"/>
+					<apex:column headerValue="Job Type" value="{!b.job.JobType}" width="10%"/>
+				</apex:pageBlockTable>
+			</apex:repeat>
+		</apex:pageBlock>
+
+		<apex:pageBlock title="Recently completed jobs">
+			<apex:repeat value="{!completedBatchJobsPriorityMap}" var="key">
+				<apex:pageBlockTable value="{!completedBatchJobsPriorityMap[key]}" var="b" id="jobs">
+					<apex:column headerValue="Apex Class" value="{!b.job.ApexClass.Name}" width="20%"/>
+					<apex:column headerValue="Queue" value="{!key}" width="5%"/>
+					<apex:column headerValue="Enqueue" width="10%">
+						<apex:outputText value="{0,date,dd-MM-yy HH:mm:ss}">
+							<apex:param value="{!b.job.CreatedDate +(1/gmtOffset)}" />
+						</apex:outputText>
+					</apex:column>
+					<apex:column headerValue="Execute start" width="10%">
+						<apex:outputText value="{0,date,HH:mm:ss}">
+							<apex:param value="{!b.jobLog.CustomJobStartTime__c +(1/gmtOffset)}" />
+						</apex:outputText>
+					</apex:column>
+					<apex:column headerValue="Finish" width="5%">
+						<apex:outputText value="{0,date,HH:mm:ss}">
+							<apex:param value="{!b.jobLog.CustomJobEndTime__c +(1/gmtOffset)}" />
+						</apex:outputText>
+					</apex:column>
+					<apex:column headerValue="Enqueue time (s)" value="{!b.jobEnqueueTime}" width="10%"/>
+					<apex:column headerValue="Running time (s)" value="{!b.jobRunningTime}" width="10%"/>
+					<apex:column headerValue="Records processed" value="{!b.jobLog.CustomJobNumRecords__c}" width="10%"/>
+					<apex:column headerValue="Batch size" value="{!b.jobCustomSetting.BatchSize__c}" width="10%"/>
+				</apex:pageBlockTable>
+			</apex:repeat>
+		</apex:pageBlock>
+
+        <apex:pageblock title="Last failed jobs">
+            <apex:repeat value="{!failedBatchJobsPriorityMap}" var="key">
+                <apex:pageblocktable value="{!failedBatchJobsPriorityMap[key]}" var="b" id="jobs">
+                    <apex:column headervalue="Apex Class" value="{!b.job.ApexClass.Name}" width="15%" />
+                    <apex:column headervalue="Queue" value="{!key}" width="5%" />
+                    <apex:column headervalue="Start date" width="10%">
+                        <apex:outputtext value="{0,date,dd-MM-yy HH:mm:ss}">
+                            <apex:param value="{!b.job.CreatedDate +(1/gmtOffset)}" />
+                        </apex:outputtext>
+                    </apex:column>
+                    <apex:column headervalue="ExtendedStatus" value="{!b.job.ExtendedStatus}" width="50%" />
+                    <apex:column value="{!b.job.Status}" width="10%" />
+                    <apex:column headervalue="Job Type" value="{!b.job.JobType}" width="10%" />
+                </apex:pageblocktable>
+            </apex:repeat>
+        </apex:pageblock>
+	</apex:form>
+</apex:page>

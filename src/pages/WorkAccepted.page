@@ -1,0 +1,41 @@
+<apex:page showHeader="false" sidebar="false">
+    <apex:includeScript value="/support/console/37.0/integration.js"/>
+    <script type="text/javascript">__sfdcSessionId = '{!$Api.Session_Id}';</script>
+    <script src="/soap/ajax/40.0/connection.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var listener = function ( result ) {
+            var recordId = result.workItemId;
+            var callLogPrefixId = '{!$ObjectType.CallLog__c.keyPrefix}';
+            if ( recordId.substring(0, 3) == callLogPrefixId) {
+                var lstCallog = sforce.connection.query("select Id, Status__c from CallLog__c where Id = '"+recordId+"' limit 1"); 
+				if(lstCallog.getArray("records").length>0){
+					var callLog = lstCallog.getArray("records")[0];
+	                if (callLog.Status__c == 'Open'){
+		                var callLogToUpdate = new sforce.SObject( "CallLog__c" );
+		                callLogToUpdate.Id = result.workItemId;
+		                callLogToUpdate.Status__c = 'In Progress';
+		                sforce.connection.update( [callLogToUpdate] );
+		            }
+					
+					var resultQuery = sforce.connection.query("Select  Id,CaseId__c,CaseId__r.CaseNumber from CallLog__c where id='"+ result.workItemId +"'", {
+						onSuccess : function(data) {
+						   var records = data.getArray("records");
+						   if( records.length > 0 && records[0].CaseId__c != '') {
+
+							 sforce.console.openPrimaryTab(null, '/'+records[0].CaseId__c, true, records[0].CaseId__r.CaseNumber, function (resultSuccess) {
+
+								console.log('resultSuccess',resultSuccess);
+							}, 'salesforceTab');
+						   }
+						},
+						onFailure : function(error) {
+						   console.log('error===',error);
+						}
+					});
+		        }
+            }
+        };
+        //Add a listener for the 'SampleEvent' event type
+        sforce.console.addEventListener( sforce.console.ConsoleEvent.PRESENCE.WORK_ACCEPTED, listener );
+    </script>
+</apex:page>

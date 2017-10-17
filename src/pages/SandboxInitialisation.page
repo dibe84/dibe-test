@@ -1,0 +1,67 @@
+<apex:page showHeader="true" sidebar="true" controller="PGC_SandboxInitialisation">
+	<apex:form id="form">
+		<apex:pageMessages id="showmsg"></apex:pageMessages>
+		<apex:pageBlock title="Restore from existing DataContainer" id="dcList">
+			<apex:inputHidden value="{!selectedSrId}" id="RadioButtonSrValue" />
+			<apex:pageBlockTable value="{!availableStaticResources}" var="sr" rowClasses="odd,even" styleClass="tableClass">
+			<apex:column >
+				<apex:facet name="header"></apex:facet>
+				<input type="radio" name="radioSelectedSrId" id="{!sr.Id}" VALUE="{!sr.Id}" onclick="updateSelectedSrId(this,'{!$Component.RadioButtonSrValue}');"/>
+				<label for="{!sr.Id}"><b>{!sr.Name}</b></label>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Name</apex:facet>
+				<a href="/{!sr.Id}" target="_blank">{!sr.name}</a>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Created</apex:facet>
+				<apex:outputField value="{!sr.CreatedDate}"></apex:outputField> by&nbsp;<apex:outputField value="{!sr.CreatedById}"></apex:outputField>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Modified</apex:facet>
+				<apex:outputField value="{!sr.LastModifiedDate}"></apex:outputField> by&nbsp;<apex:outputField value="{!sr.LastModifiedById}"></apex:outputField>
+			</apex:column>
+			<apex:column >
+				<apex:facet name="header">Download</apex:facet>
+				<a href="/resource/1464268847000/{!sr.Name}" target="_blank">{!sr.name}</a>
+			</apex:column>
+			</apex:pageBlockTable>
+			<apex:pageBlockButtons location="bottom">
+				<apex:actionStatus id="importButton">
+					<apex:facet name="stop">
+						<apex:commandButton action="{!import}" value="Import" reRender="form" status="importButton" />
+					</apex:facet>
+					<apex:facet name="start">
+						<apex:outputPanel >
+							<apex:image value="/img/loading32.gif" style="height: 15px;"/>
+						</apex:outputPanel>
+					</apex:facet>
+				</apex:actionStatus>
+			</apex:pageBlockButtons>
+		</apex:pageBlock>
+		<apex:pageBlock title="Create new DataContainer" id="newDc">
+			<apex:pageBlockSection >
+				<apex:inputText value="{!exportName}" label="Data Container Name"></apex:inputText>
+			</apex:pageBlockSection>
+			<apex:pageBlockButtons location="bottom">
+				<apex:actionStatus id="createButton">
+					<apex:facet name="stop">
+						<apex:commandButton action="{!create}" value="Create" reRender="form" status="createButton" />
+					</apex:facet>
+					<apex:facet name="start">
+						<apex:outputPanel >
+							<apex:image value="/img/loading32.gif" style="height: 15px;"/>
+						</apex:outputPanel>
+					</apex:facet>
+				</apex:actionStatus>
+			</apex:pageBlockButtons>
+		</apex:pageBlock>
+	</apex:form>
+	<script type="text/javascript">
+		
+		function updateSelectedSrId(input,hiddenfield){
+		    document.getElementById(hiddenfield).value = input.value;
+		}
+
+	</script>
+</apex:page>

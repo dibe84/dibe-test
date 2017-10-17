@@ -1,0 +1,56 @@
+<apex:page standardController="Rev__c" extensions="PGC_Subscription">
+    <apex:pageMessages id="errors"/>
+    <apex:form >
+        <apex:pageBlock title="Subscription Details" id="details">
+            <apex:pageBlockSection columns="1" >
+                <apex:pageblocksectionitem >
+                    <apex:outputlabel for="oppLink" value="Opportunity" />
+                    <apex:outputlink id="oppLink" value="/{!opp.Id}">{!opp.Name}</apex:outputlink>
+                </apex:pageblocksectionitem>
+                <apex:outputfield value="{!opp.Pricebook2Id}" />
+                <apex:outputfield value="{!currentRevenue.Product__c}" />
+                <apex:outputfield value="{!currentRevenue.CommittedEndDate__c}" />
+                <apex:outputfield value="{!currentRevenue.initialEndDate__c}" />
+                <apex:outputfield value="{!currentRevenue.LastBilledDate__c}" />
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:pageBlock mode="edit" title="Terminate Subscription">
+            <apex:pageBlockSection columns="2" id="olifields">
+                <apex:inputfield value="{!currentRevenue.TerminationDate__c}" />
+                <apex:inputfield value="{!currentRevenue.TerminationReason__c}" />
+                <apex:inputfield value="{!currentRevenue.PlatformDeactivationDate__c}" />
+                <apex:inputfield value="{!currentRevenue.DoNotInvoiceReason__c}" />
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons location="bottom">
+                <apex:actionStatus id="savestatus">
+                    <apex:facet name="stop">
+                        <apex:outputPanel >
+                            <apex:commandButton value="Terminate Subscription" action="{!terminateSubscription}" status="savestatus" rerender="errors,details,timeline" />
+                            <apex:commandButton value="Terminate and Do Not Invoice anymore" action="{!terminateAndDoNotInvoiceSubscription}" status="savestatus" rerender="errors,details,timeline" />
+                        </apex:outputPanel>
+                    </apex:facet>
+                    <apex:facet name="start">
+                        <apex:outputPanel >
+                            <apex:image value="/img/loading32.gif" style="height: 15px;"/>
+                            <apex:commandButton value="Processing..." disabled="true"/>
+                        </apex:outputPanel>
+                    </apex:facet> 
+                </apex:actionStatus>
+                <apex:commandButton value="Cancel" action="{!cancel}" />
+             </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:pageBlock title="Subscription Timeline" id="timeline">
+            <apex:pageblocktable value="{!mainSubscription.revItems}" var="item">
+                <apex:column value="{!item.Pricebook__c}" />
+                <apex:column value="{!item.Product__c}" />
+                <apex:column value="{!item.From_Date__c}" />
+                <apex:column value="{!item.Until_Date__c}" />
+                <apex:column value="{!item.BundleSize__c}" />
+                <apex:column value="{!item.ListPrice__c}" />
+                <apex:column value="{!item.UnitPrice__c}" />
+                <apex:column value="{!item.Status__c}"  />
+                <apex:column value="{!item.DoNotInvoice__c}"  />
+            </apex:pageblocktable>
+       </apex:pageBlock>
+    </apex:form>
+</apex:page>

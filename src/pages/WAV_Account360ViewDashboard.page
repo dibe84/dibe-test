@@ -1,0 +1,129 @@
+<apex:page sidebar="true" standardController="Account"> 
+    <style>
+        body {
+            font-family: "Lato", sans-serif;
+        }
+        
+        /* Style the tab */
+        div.tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background :none ;
+        }
+        
+        /* Style the buttons inside the tab */
+        div.tab button {
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+            margin: 0;
+            border-radius: 0;
+        }
+        
+        /* Change background color of buttons on hover */
+        div.tab button:hover {
+             background-color: #ddd;
+        }
+        
+        /* Create an active/current tablink class */
+        div.tab button.active {
+            background-color: #f2f6fa;
+            border-left: 1px solid #ccc;
+                border-right: 1px solid #ccc;
+        }
+        div.tab button.active:first-child{
+            border-left-width: 0;
+        }
+        
+        /* Style the tab content  background-color: #ccc; */
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+        .tablinks{
+            background :none ;
+        }
+        
+        /* Style the close button */
+        .topright {
+            float: right;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        .topright:hover {color: red;}
+    </style>
+    
+          
+    <div class="tab">
+      <button class="tablinks" onclick="openTab(event, '360Views')" id="defaultOpen">360 Views</button>
+      <button class="tablinks" onclick="openTab(event, 'Activity')">Activity</button>
+      <button class="tablinks" onclick="openTab(event, 'Commercial')">Commercial</button>
+    </div>
+    
+    <div id="360Views" class="tabcontent">
+      <span onclick="this.parentElement.style.display='none'" class="topright"></span>
+      <wave:dashboard developername="WDB_Account_360" 
+                    showTitle="false" 
+                    height="600px" 
+                    openLinksInNewWindow="true"
+                    filter="{'datasets':{
+                        'WDS_Account1':[{'fields':['Id'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}],
+                        'WDS_Opportunity_Account':[{'fields':['AccountId'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}], 
+                        'WDS_RevenueSchedule_RevenueItem_Opportunity_Account2':[{'fields':['Rev__c.Opportunity__c.AccountId.Id'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}],
+                        'WDS_Task_Account_Owner':[{'fields':['AccountId'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}]
+                        }}}"
+                    /> 
+    </div>
+    <div id="Activity" class="tabcontent">
+      <span onclick="this.parentElement.style.display='none'" class="topright"></span>
+      <wave:dashboard developername="WDB_Account_Activity" 
+                    showTitle="false" 
+                    height="600px" 
+                    openLinksInNewWindow="true"
+                    filter="{'datasets':{
+                        'WDS_Account1':[{'fields':['Id'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}],
+                        'WDS_Task_Account1':[{'fields':['AccountId.Id'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}], 
+                        'WDS_Task_Account_Owner':[{'fields':['AccountId.Id'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}]
+                        }}}"
+                    /> 
+    </div>
+    <div id="Commercial" class="tabcontent">
+      <span onclick="this.parentElement.style.display='none'" class="topright"></span>
+      <wave:dashboard developername="WDB_Account_Commercial" 
+                    showTitle="false" 
+                    height="600px" 
+                    openLinksInNewWindow="true"
+                    filter="{'datasets':{
+                        'WDS_Account1':[{'fields':['Id'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}],
+                        'WDS_RevenueItem_Opportunity_Account1':[{'fields':['Opportunity__c.AccountId'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}], 
+                        'WDS_RevenueSchedule_RevenueItem_Opportunity_Account2':[{'fields':['Rev__c.Opportunity__c.AccountId.Id'], 'filter':{'operator': 'matches', 'values':['{!Account.Id}']}}],
+                   
+                        }}}"
+                    /> 
+    </div>
+    
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        document.getElementById("defaultOpen").click();
+</script>
+
+</apex:page>

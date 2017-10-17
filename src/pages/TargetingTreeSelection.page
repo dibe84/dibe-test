@@ -1,0 +1,353 @@
+<apex:page sidebar="false" id="thePage" controller="TargetingTreeSelectionController" showHeader="false" >
+<head>
+    <script type="text/javascript" src="{!URLFOR($Resource.JqueryForTree, '/jquery.js')}"/> 
+    <script type="text/javascript" src="{!URLFOR($Resource.JqueryForTree, '/jquery-ui.custom.js')}"/>   
+    <script type="text/javascript" src="{!URLFOR($Resource.JqueryForTree, '/jquery.cookie.js')}"/>  
+    <apex:stylesheet value="{!URLFOR($Resource.JqueryForTree, '/ui.dynatree.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.JqueryForTree, '/jquery-ui.css')}"/>
+    <script type="text/javascript" src="{!URLFOR($Resource.JqueryForTree, '/jquery.dynatree.js')}"/>        
+    <script type="text/javascript" src="{!URLFOR($Resource.JqueryForTree, '/jquery-ui.min.js')}"/>  
+    
+    <style>
+    
+        span.dynatree-empty, span.dynatree-vline, 
+        span.dynatree-connector, span.dynatree-expander, 
+        span.dynatree-icon, span.dynatree-checkbox, span.dynatree-radio, 
+        span.dynatree-drag-helper-img, #dynatree-drop-marker {
+            background-image: url("{!URLFOR($Resource.JqueryForTree, '/iconsvista.gif')}");
+        }
+        span.dynatree-connector {
+            background-image: none;
+        }
+        .InputStyle {
+            width: 98%;
+            margin: 2px;
+            display: inline-block;
+            color: #999;
+        }
+        input {
+            margin: 0;
+            border-radius: 3px;
+            border: 1px solid #999999;
+            padding: 3px 5px;
+            vertical-align: middle;
+        }
+         .ui-autocomplete-loading { 
+            background: white url(/img/loading32.gif) right center no-repeat;
+            background-size:15px 15px; 
+        }  
+        .buttons{
+            margin-left:  5px !important;
+        }
+        #salesforceSource_blurybackground{
+            position: fixed !important;
+        }
+        .buttonsWidth{
+            width: 70px !important;
+        }
+         body{
+            background-color: #d8e3ee;
+        } 
+    </style>
+    <script>
+        function setValueToParent(){                
+            var isSaveError = document.getElementById('thePage:theForm:isSaveError'); 
+            if(isSaveError.value == 'false'){
+                var tarText = document.getElementById('thePage:theForm:tarText'); 
+                var targetId = document.getElementById('thePage:theForm:targetId'); 
+                var eleId = window.parent.document.getElementById('targetingId'); 
+                var eleText = window.parent.document.getElementById('targetingText');                   
+                eleId.value =  targetId.value;
+                eleText.value = tarText.value;
+            }
+            
+        }
+        
+        function checkTargetingBeforeSave(){
+            var targeting = document.getElementById('thePage:theForm:targetId');
+            var eleId = window.parent.document.getElementById('targetingId'); 
+            if(targeting.value=='' && eleId.value !='none'){
+                targeting.value = eleId.value;
+            }
+            saveRecords();
+        }
+        
+		function updateJSON(flag, node){ 
+			var json = document.getElementById('thePage:theForm:jsonObject').value;
+			var content = JSON.parse( json );	// convert string to array
+			
+			updateThisDTO([content], flag, node.data.key); // checked/unchecked this item and its child
+			updateUncheckedUpLevel([content], flag, node); // unchecked the parent if this item is unchecked
+			 
+			var jsonString = JSON.stringify(content); // convert array to json string					
+			document.getElementById('thePage:theForm:jsonObject').value= jsonString; // add json string back into input for apex proccessind		    
+		}
+		
+		function updateThisDTO(treeItems, flag, treeId){
+			for(var i=0; i<treeItems.length; i++){ 
+				var dto = treeItems[i];
+				if(dto.treeId == treeId){
+					dto.isSelected = flag; 
+					updateChildDTO(dto); 
+					return; 
+				}  
+				updateThisDTO(dto.lstChild, flag, treeId); 
+			} 
+		} 
+		
+		function updateChildDTO(treeItems){
+			for(var i=0; i<treeItems.lstChild.length; i++){
+				var child = treeItems.lstChild[i];
+				child.isSelected  = treeItems.isSelected; 
+				updateChildDTO(child); 
+			}
+		}
+		
+		function updateUncheckedUpLevel(treeItems, flag, node){
+			if(flag) return; 
+			var pNote = node.getParent();  
+			if(pNote){
+				updateDTOFromChild(treeItems, pNote.data.key); 
+				updateUncheckedUpLevel(treeItems, flag, pNote);
+			} 		 
+		} 
+		
+		function updateDTOFromChild(treeItems, treeId){
+			for(var i=0; i<treeItems.length; i++){
+				var dto = treeItems[i]; 
+				if(dto.treeId == treeId){ 
+					dto.isSelected = false;
+					return; 
+				}
+				updateDTOFromChild(dto.lstChild, treeId);
+			}
+		}
+		
+		
+		function initializeTree() {
+			//ul -> li -> ul -> li -> ul -> li  
+			var selectedContent = document.getElementById("thePage:theForm:selectedContent").value;
+			
+			var val = document.getElementById("thePage:theForm:jsonObject").value;
+			var content = JSON.parse( val );
+			var lstRecords = content.lstChild;	
+
+			var tree = document.getElementById("tree");
+			var ulTop = document.createElement("ul");
+			ulTop.style.display = "none";
+			ulTop.id = "treeData"; 
+	    	var liParent = document.createElement("li");
+	    	liParent.innerHTML = content.treeName; 
+	    	liParent.className = content.isFolder == true ? "folder" : "";
+	    	liParent.id = content.treeId;
+	    	liParent.setAttribute("data","hideCheckbox:" + content.isHideCheckBox + ",expand:true,select:"+content.isSelected);
+	    	var ulParent = document.createElement("ul");
+			
+			//Initial all contents to tree
+			for(var i=0;i< lstRecords.length;i++) 
+			{
+				var treeParent = lstRecords[i];
+				var liContent = document.createElement("li");
+				liContent.id = treeParent.treeId;
+				liContent.className = treeParent.isFolder==true?"folder":"";
+				liContent.title = treeParent.treeName;
+				liContent.innerHTML = treeParent.treeName;
+				liContent.id = treeParent.treeId;
+				// Set focus to node that has been clicked
+				var fc = "";
+				if(selectedContent != "" && treeParent.treeId == selectedContent)
+				{
+					fc = ",focus:true";
+				}
+				liContent.setAttribute("data","pos:"+treeParent.pos+",expand:"+treeParent.isExpand+",select:"+treeParent.isSelected+fc);
+				ulParent.appendChild(liContent);
+				
+				var ulChild = createUlLiComp(treeParent);
+				
+				liContent.appendChild(ulChild);
+				ulParent.appendChild(liContent);
+			}
+			
+	    	liParent.appendChild(ulParent);
+	    	ulTop.appendChild(liParent);
+	    	tree.appendChild(ulTop);
+	    }
+		
+		function createUlLiComp(treeParent) 
+		{	
+			var selectedContent = document.getElementById("thePage:theForm:selectedContent").value;
+			var ulChild = document.createElement("ul");
+				
+			for(var j=0;j<treeParent.lstChild.length;j++)
+			{
+				
+				var treeChild = treeParent.lstChild[j];
+				
+				var fc = "";
+				if(selectedContent != "" && treeChild.treeId == selectedContent)
+				{
+					fc = ",focus:true";
+				}
+				
+				var liChild = document.createElement("li");
+				liChild.className = treeChild.isFolder==true?"folder":"";
+				liChild.title = treeChild.treeName; 
+				liChild.id = treeChild.treeId; 
+				liChild.setAttribute("data","hideCheckbox:"+treeChild.isHideCheckBox+",parrentId:'"+treeChild.treeParrentId+"',treeLv:"+treeChild.treeLv+",pos:"+treeChild.pos+",expand:"+treeChild.isExpand+",select:"+treeChild.isSelected+",parrentPos:"+treeParent.pos+",parrentTopPos:"+treeParent.pos+",parrentTopKey:"+treeParent.treeId+",isFolder:"+treeChild.isFolder+fc);
+				liChild.innerHTML = treeChild.treeName;
+				
+				if(treeChild.lstChild.length>0)
+				{
+					var ulVal = createUlLiComp(treeChild);
+					liChild.appendChild(ulVal);
+					
+				}
+				
+				ulChild.appendChild(liChild);
+						
+			}
+			return ulChild;
+		}
+		
+    </script>
+</head>
+<body   style="margin-left: 5px;margin-right: 5px;">
+<apex:form id="theForm" >
+    <apex:inputHidden value="{!jsonObject}" id="jsonObject"/>
+    <apex:inputHidden value="{!isSaveError}" id="isSaveError"/>
+    <apex:inputHidden value="{!targetId}" id="targetId"/>
+    <apex:inputHidden value="{!tarText}" id="tarText"/>
+    <apex:inputHidden value="{!selectedContent}" id="selectedContent"/>
+    
+    <apex:actionFunction name="addContent" action="{!addContent}" rerender="theTreeContent,theMessages,jsonObject" status="status"/> 
+    <apex:actionFunction name="saveRecords" action="{!saveRecords}" rerender="theTreeContent,theMessages,isSaveError,targetId,tarText" oncomplete="setValueToParent();" status="status"/> 
+    <apex:actionFunction name="showMore" action="{!showMore}" rerender="theTreeContent,theMessages,jsonObject" status="status"/>
+    
+    <apex:pageMessages id="theMessages"/>
+     
+     <div >                                                                         
+            <input type="text" class="InputStyle" id="searchContent" placeholder="Content search" onKeypress="if (event.keyCode == 13){ addContent();return false;}" />
+            <apex:commandButton value="Reset tree" action="{!resetTree}" rerender="theTreeContent,theMessages,jsonObject"  rendered="false" styleClass="buttons" status="status"/>
+        </div>
+        <table width="100%">
+            <tr>
+                <td valign="top">       
+                    <apex:outputPanel id="theTreeContent" >     
+                        <div id="tree" style="height: 400px;">
+                        	<script>
+                        		initializeTree();
+                        	</script>
+                        </div>
+                         <script type="text/javascript">
+                            $(function(){
+						        $("#tree").dynatree({
+						       		checkbox: true, // Show checkboxes.
+						       		selectMode: 3,
+						       		onClick: function(node, event) { 
+					       	 			if( node.getEventTargetType(event) == "title" && node.data.isFolder == true ){	
+					       	 				if (node.data.key != "SHOW_MORE") {
+					       	 					$('[id$=selectedContent]').val(node.data.key);
+						       	  				showMore();
+							       	   			return false;
+					       	 				} else {	
+						       	 				var parentNode = node.getParent();
+						       	 				$('[id$=selectedContent]').val(parentNode.data.key);
+						       	  				showMore();
+							       	   			return false; 
+							       	   		}
+					       	 			}  
+						      		},
+								    onKeydown: function(node, event) {
+								        if( event.which == 32 ) {
+								          node.toggleSelect();
+								          return false;
+								        }
+								   },
+								   fx: { height: "toggle", duration: 200 },
+								   onSelect: function (flag, node){ 
+								   		updateJSON(flag, node);
+								   }
+						      });
+						       
+						    }); 
+						    
+                        </script>
+                     </apex:outputPanel>
+                </td>
+                <td align="center" valign="middle">
+                    <div > <apex:commandButton value="Save" onclick="checkTargetingBeforeSave();return false;" styleClass="buttons buttonsWidth" status="status"/></div>
+                    <div style="margin-top:  10px;"><apex:commandButton rendered="{!Not(isShowCancel)}" value="Cancel" onclick="window.close();return false;" styleClass="buttons buttonsWidth" /></div>
+                </td>
+            </tr>
+        </table>
+        <apex:actionStatus id="status">
+                <apex:facet name="start">
+                    <c:load BackColor="#efefef" borderColor="#efefef" borderSize="3" height="50px" width="180px" Message="Please, wait..." messageStyle="color:darkred;font-size:10pt;font-family:arial;font-weight:bold;" imageUrl="/img/loading.gif"/>
+                </apex:facet>
+       </apex:actionStatus>
+</apex:form>  
+</body>
+<script type="text/javascript">
+        //without this, tabclick will stop working after jQuery lib imported.
+     var $ = jQuery.noConflict();
+     var activeTree ;
+    jQuery(document).ready(function($) {
+             
+          var PLACEHOLDER = 'Content search'; 
+          var itemObjects;        
+          var queryTerm;  
+          
+          $('[id$=searchContent]').autocomplete({
+                    minLength: 2,
+                    source: function(request, response) {
+                              queryTerm = request.term; 
+                              TargetingTreeSelectionController1.searchContent(request.term, '{!content.treeId}', function(result, event){
+                                    if(event.type == 'exception') {
+                                          alert(event.message);
+                                    } else {                                        
+                                         itemObjects = result;
+                                         response(itemObjects);
+                                    }
+                                });
+                           },
+                    focus: function( event, ui ) {
+                            $('[id$=searchContent]').val( ui.item.DartName__c  );
+                            return false;
+                            },
+                    select: function( event, ui ) {
+                                $('[id$=searchContent]').val( ui.item.DartName__c );    
+                                $('[id$=selectedContent]').val( ui.item.Id );                         
+                                //case pressing key enter
+                                if(event.which==13){
+                                    addContent();
+                                }
+                                return false;
+                            },
+            })               
+            .data( "autocomplete" )._renderItem = function( ul, item ) {
+                var entry = "<a>" + item.DartName__c ;                 
+                entry = entry + "</a>";
+                entry = entry.replace(queryTerm, "<b>" + queryTerm + "</b>");
+                return $( "<li></li>" )
+                    .data( "item.autocomplete", item )
+                    .append( entry )
+                    .appendTo( ul );
+            };
+                    
+            // Add or remove placeholder values
+            $('[id$=searchContent]').val(PLACEHOLDER);
+            $('[id$=searchContent]').on("focus",  function(event){
+                $tgt = $(event.target);
+                if($tgt.val() === PLACEHOLDER ){
+                    $tgt.val('');                   
+                }
+            });
+            $('[id$=searchContent]').on( "blur",  function(event){
+                $tgt = $(event.target);
+                if($tgt.val() === '' ){
+                    $tgt.val(PLACEHOLDER);                    
+                }
+            });
+    });
+  </script>
+</apex:page>

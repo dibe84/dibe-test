@@ -1,0 +1,28 @@
+<apex:page sidebar="false" showHeader="true" controller="LCS_Console_RelatedListController"> 
+	
+  	<apex:form>
+	  	<apex:actionfunction name="passObjectId" rerender="relLists">
+	        <apex:param name="objId" value="" assignto="{!objectId}"/>
+	    </apex:actionfunction>
+	</apex:form>
+
+	<apex:includeScript value="/support/console/40.0/integration.js"/>
+    <script type="text/javascript">
+        function testGetFocusedPrimaryTabObjectId() {
+            sforce.console.getFocusedPrimaryTabObjectId(showObjectId);
+        }
+        function showObjectId(result) {
+            passObjectId(result.id);
+        };
+        testGetFocusedPrimaryTabObjectId();
+  	</script>
+
+  	<apex:outputPanel id="relLists">
+  		<apex:pageMessages />
+		<apex:relatedList list="Cases" subject="{!relCase.ContactID}" rendered="true"/>
+		<apex:relatedList list="Call_Logs__r" subject="{!relCase.ContactID}" rendered="true"/>
+		<apex:relatedList list="LiveChatTranscripts" subject="{!relCase.ContactID}" rendered="true"/>
+		<!-- <apex:relatedList list="Social_Posts__r" subject="{!relCase.ContactID}" rendered="{!relCase.ContactId != null}"/> -->
+	</apex:outputPanel>
+
+</apex:page>

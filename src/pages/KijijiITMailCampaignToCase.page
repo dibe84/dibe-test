@@ -1,0 +1,322 @@
+<apex:page sidebar="false" showHeader="false" controller="ForceDotComMailCampaignToCase" standardStylesheets="false">
+    <apex:outputText rendered="{!showPage == 'default'}">
+    <html lang="it" itemtype="http://schema.org/Product">
+    <head>
+    <title>Kijiji | Contattaci</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    
+    <meta id="grunticon" name="grunticon" content="http://static.annuncicdn.it/4592b35/css/_grunticon/" />    
+    <noscript>
+    <link rel="stylesheet" href="https://www.kijiji.it/css/_grunticon/icons.fallback.css" />
+    </noscript>
+    
+    <link rel="stylesheet" type="text/css" href="{!$Resource.KijijiITLandingPage}/css/all.css"/>
+
+
+    <!--[if lt IE 9]><link rel="stylesheet" type="text/css" href="https://static.annuncicdn.it/4592b35/css/all-oldie.css"/><![endif]-->
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        
+    <script type="text/javascript">
+    $(document).ready(function() {
+        Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.ForceDotComMailCampaignToCase.saveHit}',
+                    '{!targetId}',
+                    function(result, event){
+                        console.log('saveHit callback', result, event);
+                    }, 
+                    {escape: true}
+                );
+    
+    
+        $("#btn_submit").click(function(){
+            console.log('click');
+            var data = getData();
+            var errors = [];
+            
+            $("input[name='email']").removeClass('error');
+            $("#msg_error_email").css('visibility', 'hidden');
+            
+            $("input[name='nome']").removeClass('error');
+            $("#msg_error_nome").css('visibility', 'hidden');
+            
+            $("input[name='telefono']").removeClass('error');
+            $("#msg_error_telefono").css('visibility', 'hidden');
+            
+            if (data.email == undefined || data.email.length < 5 || data.email.indexOf('@') == -1) {
+                errors.push('email');
+            }
+            if (data.name == undefined || data.name.length < 2) {
+                errors.push('name');
+            }
+            if (data.phone == undefined || data.phone.length < 2) {
+                errors.push('phone');
+            }
+            
+            if (errors.indexOf('email') > -1) {
+                $("input[name='email']").addClass('error');
+                $("#msg_error_email").css('visibility', 'visible');
+            }            
+            
+            if (errors.indexOf('name') > -1) {
+                $("input[name='nome']").addClass('error');
+                $("#msg_error_nome").css('visibility', 'visible');
+            }
+            
+            if (errors.indexOf('phone') > -1) {
+                $("input[name='telefono']").addClass('error');
+                $("#msg_error_telefono").css('visibility', 'visible');
+            }
+            
+            if (errors.length == 0) {
+                console.log('do save');
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.ForceDotComMailCampaignToCase.saveResponse}',
+                    data.email,
+                    data.name,
+                    data.company,
+                    data.phone,
+                    data.hours,
+                    '{!targetId}',
+                    '{!campaignId}',
+                    function(result, event){
+                        console.log('callback', result, event);
+                        if (event.status === true) {
+                            $("#conferma_email").show();
+                        } else  {
+                            alert('Something went wrong processing your request, please try again later');
+                        }
+                    }, 
+                    {escape: true}
+                );
+            }
+        });
+        
+        $("input[name='email']").keyup(function() {
+            $(this).removeClass('error');
+            $("#msg_error_email").css('visibility', 'hidden');
+        });
+        
+        $("input[name='nome']").keyup(function() {
+            $(this).removeClass('error');
+            $("#msg_error_nome").css('visibility', 'hidden');
+        });
+        
+        $("input[name='telefono']").keyup(function() {
+            $(this).removeClass('error');
+            $("#msg_error_telefono").css('visibility', 'hidden');
+        });
+        
+        $("#chiudi_conferma").click(function(){
+            $("#conferma_email").hide();
+        });
+    
+        $("#cta_conferma").click(function(){
+            location.href = "http://www.kijiji.it/";
+        });
+    });
+    function getData() {
+        var obj = {
+            email: $("input[name='email']").val(),
+            name: $("input[name='nome']").val(),
+            phone: $("input[id='telefono']").val(),
+            company: $("input[name='azienda']").val(),
+            hours: $("input[name='orario']").val()        
+        }
+        return obj;
+    }
+    </script>
+        
+    
+    <!--[if lt IE 9]>
+    <script type="text/javascript">
+    $.noConflict();
+    jQuery( document ).ready(function( $ ) {
+        $("#categories").load("four_columns.html", function(){
+            $("#preloader_menu").css("display", "none");
+            $(".cat .visible").click(function(){
+                var ref = $(this).attr("ref");
+                $(this).toggleClass("active");
+                $(".sottocategory", $("#"+ref)).slideToggle("slow");
+            });
+            $("#categories").css("display", "block");
+    
+        });
+    });
+    </script>
+    <![endif]--> 
+    <!-- <script id="initialjs" src="{!$Resource.KijijiITLandingPage}/js/initial.js" data-enhance="{!$Resource.KijijiITLandingPage}/js/initial.js" ></script> -->
+    <link rel="stylesheet" type="text/css" href="{!$Resource.KijijiITLandingPage}/css/style.css" />
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css' />
+    <script type="text/javascript">
+    function cerca()
+    {
+        var kijiji="www.kijiji.it/";
+        var ricerca=document.forms[0].elements[0].value;
+        var replaced=ricerca.replace(" ","+");
+        location.href="http://"+kijiji+replaced+"/";
+    }
+    
+    
+    </script>   
+    
+    <!--[if lt IE 9]>
+    <script src="{!$Resource.KijijiITLandingPage}/js/html5.js"></script>
+    <![endif]-->
+    </head>
+    
+    <body>
+        <div id="conferma_email" style="display:none;">
+            <div id="conferma_email_box">
+                <div id="chiudi_conferma">X</div>
+                <div id="titolo_conferma"><strong>GRAZIE!</strong></div>
+                <div id="messaggio_conferma">La tua mail è stata inviata con successo.<br />Ti ricontatteremo presto.</div>
+                <div id="cta_conferma"><div id="testo_cta_conferma">Vai su Kijiji</div></div>
+                
+            </div><!-- Modal header-->
+        </div>
+    <!--[if lt IE 9]>
+      <script>
+        document.createElement("header" );
+        document.createElement("footer" );
+        document.createElement("section"); 
+        document.createElement("aside"  );
+        document.createElement("nav"    );
+        document.createElement("descr_articolo");
+        document.createElement("article"); 
+        document.createElement("hgroup" ); 
+        document.createElement("time"   );
+      </script>
+      <noscript>
+         <strong>Warning !</strong>
+         Because your browser does not support HTML5, some elements are simulated using JScript.
+         Unfortunately your browser has disabled scripting. Please enable it in order to display this page.
+      </noscript>
+    <![endif]-->
+        <header role="banner">
+            <!--<div id="contenitore_top_grp">
+                <div class="top" >
+                    <p dir="ltr">eBay Annunci è diventato Kijiji, il sito di annunci locali del gruppo eBay.<br /><strong>Su Kijiji troverai gli stessi annunci e le stesse funzionalità di eBay Annunci, solo con un nome diverso!</strong></p>
+                    <div class="loghi">
+                    <a href="https://www.kijiji.it/?utm_source=annunci.ebay.it&utm_medium=SingleBrand&utm_campaign=Notice_HP" target="_self" class="loghi_mobile"></a>
+                    <a href="https://www.kijiji.it/?utm_source=annunci.ebay.it&utm_medium=SingleBrand&utm_campaign=Notice_HP" target="_self" class="annunci"></a>
+                    <em></em>
+                    <a href="http://www.kijiji.it/?utm_source=annunci.ebay.it&utm_medium=SingleBrand&utm_campaign=Notice_HP" target="_self" class="kijiji"></a>
+                    </div>
+                </div>
+            </div>-->
+            <div class="kj-mast kj-mast-home">
+    
+                <a href="http://www.kijiji.it/" class="kj-logo" title="Kijiji">
+                  <img src="http://static.annuncicdn.it/4592b35/img/logo-kijiji.svg" onerror="this.src='http://static.annuncicdn.it/4592b35/img/logo-kijiji.png'; this.onerror=null;" alt="Kijiji Italia: offerte di lavoro e annunci del gruppo eBay" />
+                </a>
+            
+            
+                <nav role="navigation">
+                
+                    <h2><a data-menu-trigger="kj-usernav" aria-owns="kj-usernav" aria-haspopup="true" role="button" class="kj-menu ki-icon-carat-down-accent btn btn-secondary shadow" href="#" aria-controls="kj-usernav" data-fastclick-init="true">Menu</a></h2>
+                
+                    <!-- Logged out version of the User Nav -->
+                    <ul data-menu="" role="menu" class="kj-usernav kj-logged-out" id="kj-usernav" aria-hidden="true">
+                        <li class="kj-hello" role="menuitem"><a data-menu-close="" href="#" data-fastclick-init="true"><span class="ki-icon-close"></span>Benvenuto</a></li>
+                        <li role="menuitem"><a class="kj-mast-new" href="http://www.kijiji.it/utenti-premium/" data-fastclick-init="true">Utenti Premium</a></li>
+                        <li role="menuitem"><a href="http://www.kijiji.it/miei-annunci/accedi" data-fastclick-init="true">Accedi</a></li>
+                        <li role="menuitem"><a href="http://www.kijiji.it/miei-annunci/registrati" data-fastclick-init="true">Registrati</a></li>
+                        <li role="menuitem"><a href="http://www.kijiji.it/aiuto" data-fastclick-init="true">Supporto</a></li>
+                        <li class="kj-post-ad shadow" role="menuitem"><a data-gtm-event="PostAdBegin" href="http://www.kijiji.it/pubblica-annuncio" data-fastclick-init="true">Inserisci Annuncio</a>
+                        </li>
+                    </ul>
+                    <!-- /.kj-usernav.kj-logged-out -->
+                </nav>
+            </div><!-- /.kj-mast -->
+            
+        </header>
+        <body_page>
+        
+        <!-- lightbox -->
+        
+        
+        <div id="md_body_form">
+            <div id="intestazione">
+                <div id="titolo_giallo"><strong>GRAZIE PER IL TUO INTERESSE!</strong></div>
+                <div id="titolo_grigio">Compila il form in basso e ti ricontatteremo appena possibile.</div>
+            </div>
+            <div id="cnt_form">
+                <form action="" method="post" id="formKijiji">
+                    <div class="riga_form">
+                        <label for="email"><strong>La tua email</strong> <span class="required">(obbligatorio)</span></label>
+                        <input type="text" name="email" id="email" class="campi_form" value="{!prefilledEmail}" />
+                        <div class="msg_error" id="msg_error_email" style="visibility: none;">Devi compilare questo campo!</div>
+                    </div>
+                    <div class="cnt_riga_form">
+                        <div class="riga_form riga_350">
+                            <label for="nome"><strong>Il tuo nome</strong> <span class="required">(obbligatorio)</span></label>
+                            <input type="text" name="nome" id="nome" class="campi_form" value="{!prefilledName}" />
+                            <div class="msg_error" id="msg_error_nome">Devi compilare questo campo!</div>
+                        </div>
+                        <div class="riga_form f_right riga_350">
+                            <label for="azienda"><strong>La tua azienda</strong></label>
+                            <input type="text" name="azienda" id="azienda" class="campi_form" />
+                        </div>
+                    </div>
+                    <div class="cnt_riga_form">
+                        <div class="riga_form riga_350 pt20" style="clear:both;">
+                            <label for="telefono"><strong>Il tuo telefono</strong> <span class="required">(obbligatorio)</span></label>
+                            <input type="text" name="telefono" id="telefono" class="campi_form" value="{!prefilledPhone}" />
+                            <div class="msg_error" id="msg_error_telefono">Devi compilare questo campo!</div>
+                        </div>
+                        <div class="riga_form f_right riga_350 pt20">
+                            <label for="orario"><strong>Quando preferisci essere contattato?</strong></label>
+                            <input type="text" name="orario" id="orario" class="campi_form" />
+                        </div>
+                    </div>
+                    
+                    <div id="cnt_btn" class="riga_form f_right">
+                        <div id="btn_submit"><div id="testo_btn">INVIA</div></div>
+                    </div>
+                </form>
+            </div>
+    
+        </div>
+        </body_page>
+        <footer>
+        <div class="ki-footer">
+            <div class="ki-footer-seo">
+                <a title="Kijiji" class="kj-logo" href="http://www.kijiji.it/" data-fastclick-init="true">
+                  <img alt="Kijiji Italia: offerte di lavoro e annunci del gruppo eBay" onerror="this.src='http://static.annuncicdn.it/4592b35/img/logo-kijiji.png'; this.onerror=null;" src="http://static.annuncicdn.it/4592b35/img/logo-kijiji.svg" />
+                </a>            <div class="ki-seo collapsible collapsible-hidden collapsible-loaded" aria-expanded="false">
+                  <h1 class="ki-footer-cdr collapsible-hdr">Kijiji: il servizio di annunci di eBay facile e gratuito</h1>
+                  <p class="ki-seo-content collapsible-content" aria-hidden="true">
+                      Devi fare spazio in casa? O cerchi di fare un affare nel mercato dell'usato? Kijiji è la piattaforma di annunci di eBay che combina un vasto assortimento di articoli a un ottimo servizio di supporto.<br />
+                      È il punto di riferimento per i siti di annunci gratuiti in Italia, il sito giusto per i tuoi acquisti online.<br />
+                      Non solo! Cerchi subito un lavoro o una nuova casa? Le inserzioni pubblicate includono offerte di impiego, case in affitto o in vendita e tanto altro.<br />
+                      Cosa aspetti? <strong>Comincia subito a comprare online su <a href="http://kijiji.it" data-fastclick-init="true">kijiji.it</a>!</strong>
+                </p></div>        </div>
+           
+            <div class="ki-copyright">Copyright © 2015 eBay International AG. Tutti i diritti riservati. I marchi registrati ed i segni distintivi sono di proprietà dei rispettivi titolari. L'uso di questo sito web implica l'accettazione di <a href="/aiuto/default/cookie" data-fastclick-init="true">Cookie</a>, delle <a href="/aiuto/default/condizioni" data-fastclick-init="true">Condizioni d'uso</a> e delle <a href="/aiuto/default/privacy" data-fastclick-init="true">Regole sulla privacy</a> di Marktplaats BV.</div>
+           
+            </div>
+    </footer>
+    
+    </body>
+    </html>
+    </apex:outputText>
+    <apex:outputText rendered="{!showPage == 'unsubscribe'}">
+        <script type="text/javascript">
+            window.onload = function() {
+                Visualforce.remoting.Manager.invokeAction(
+                    '{!$RemoteAction.ForceDotComMailCampaignToCase.unsubscribe}',
+                    '{!targetId}',
+                    function(result, event){
+                        console.log('unsubscribe callback', result, event);
+                    }, 
+                    {escape: true}
+                );
+            }
+        </script>
+        <p>You will be unsubscribed from further e-mails</p>
+    </apex:outputText>
+</apex:page>

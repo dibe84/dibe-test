@@ -1,0 +1,226 @@
+<apex:page standardController="Opportunity" extensions="AdSalesIOExtension" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderas="pdf">
+<head>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_THBE2AD.css')}"/>
+</head>
+<body>
+    <div class="header">
+        <table border="0" cellspacing="0" cellpadding="0" width="100%" id="table1">
+            <tr>
+                <td class="title">
+                        ADVERTISING ORDER FORM<br/>
+                </td>
+              <td class="right">
+                    <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_THBEL.jpg')}" title="logo" width="120px"/>
+                </td>
+            </tr>
+        </table>
+      </div>
+
+    <!-- advertiser and Account manager information -->
+    <table border="0" width="100%" class="orderHeader">
+        <tr>
+            <td style="text-align:left;vertical-align:top" width="50%">
+                Campaign name: {!Opportunity.Name} <br /><br/>
+                Advertiser: <br/>
+                {!Opportunity.Account.Name} <br/>
+                <apex:outputPanel rendered="{! Opportunity.Account.BillingStreet <> NULL }" layout="none">
+	                {!Opportunity.Account.BillingStreet},
+	                {!Opportunity.Account.BillingCity}
+	                {!Opportunity.Account.BillingPostalCode}
+	                ,{!Opportunity.Account.BillingCountry} <br/><br />
+                </apex:outputPanel>                
+
+                Agency: {!Opportunity.Agency__r.Name} <br /><br />
+
+                Billing account: <br/>
+                {!Opportunity.Billing_Account__r.Name} <br/>
+                <apex:outputPanel rendered="{! Opportunity.Billing_Account__r.BillingStreet <> NULL }" layout="none">
+	                {!Opportunity.Billing_Account__r.BillingStreet},
+	                {!Opportunity.Billing_Account__r.BillingCity}
+	                {!Opportunity.Billing_Account__r.BillingPostalCode},
+	                {!Opportunity.Billing_Account__r.BillingCountry} <br/><br/>
+                </apex:outputPanel>
+
+                Primary contact <br/>
+                Name: {!Opportunity.Primary_Contact__r.FirstName} {!Opportunity.Primary_Contact__r.LastName} <br />
+                Phone: {!Opportunity.Primary_Contact__r.Phone} <br />
+                Fax: {!Opportunity.Primary_Contact__r.Fax} <br />
+                E-mail: {!Opportunity.Primary_Contact__r.Email} <br />
+                <apex:outputPanel rendered="{! Opportunity.Primary_Contact__r.MailingStreet <> NULL }" layout="none">
+                    Address: {!Opportunity.Primary_Contact__r.MailingStreet}, {!Opportunity.Primary_Contact__r.MailingCity} {!Opportunity.Primary_Contact__r.MailingPostalcode}, {!Opportunity.Primary_Contact__r.MailingCountry} <br />
+                </apex:outputPanel>    
+            </td>
+            <td class="" width="50%" style="text-align:right;vertical-align:top">
+                <b><span class="bold">2dehands.be/2ememain.be Media</span></b><br/>
+                eBay UK Ltd, Belgium Branch<br/>
+                Kunstlaan / Avenue des arts 44/12<br/>
+                1040 Brussels<br/>
+                VAT: BE0841650489<br/>
+                <br/>
+                Created by: {!Opportunity.Owner.FirstName} {!Opportunity.Owner.LastName} <br/>
+                Created date: <apex:outputText value="{0, date, MMMM d','  yyyy}"><apex:param value="{!today()}"/></apex:outputText><br/>
+                E-mail: {!Opportunity.Owner.Email} <br/>
+                Phone: {!Opportunity.Owner.Phone} <br/>
+                <br/>
+                <b><span class="bold">Ordernumber: {!Opportunity.IOnumber__c}</span></b> <br/>
+            </td>
+        </tr>
+    </table>
+
+    <br/>
+    <br/>
+
+    <!-- Line items -->
+    <table  class="lineitems" id="table_lineitems">
+        <tr>
+            <th width="46%" style="text-align:center"><b>Description</b></th>
+            <th width="8%" style="text-align:center"><b>Start Date</b></th>
+            <th width="8%" style="text-align:center"><b>End Date</b></th>
+
+            <th width="5%" style="text-align:center"><b>Cost Type</b></th>
+            <th width="5%" style="text-align:center"><b>Quantity</b></th>
+            <th width="9%" style="text-align:center"><b>List Price</b></th>
+            <th width="9%" style="text-align:center"><b>Unit Price</b></th>
+            <th width="10%" style="text-align:center"><b>Total Gross Amount</b></th>
+        </tr>
+
+        <apex:repeat var="oli" value="{!sortrecord}" >
+        
+	        <tr class="thinbottomborder">
+	        
+	            <apex:outputPanel rendered="{! oli.Description == NULL }" layout="none">
+	                <td class="thinbottomborder">{!oli.DefaultLineDescription__c}</td>
+	            </apex:outputPanel>
+	            
+	            <apex:outputPanel rendered="{! oli.Description <> NULL }" layout="none">
+	                <td class="thinbottomborder">{!oli.DefaultLineDescription__c + ' - ' + oli.Description}</td>
+	            </apex:outputPanel>
+	            
+	            <td class="thinbottomborder" style="text-align:center">{!day(oli.from_Date__c)}/{!month(oli.from_Date__c)}/{!year(oli.from_Date__c)}</td>
+	            
+	            <td class="thinbottomborder" style="text-align:center">{!day(oli.until_Date__c)}/{!month(oli.until_Date__c)}/{!year(oli.until_Date__c)}</td>
+	
+	            <td class="thinbottomborder" style="text-align:center">
+	                {!oli.Billing_Category__c}
+	            </td>
+	            <td class="thinbottomborder" style="text-align:center">
+	                <apex:outputText value="{0,number,#,##0}">
+                        <apex:param value="{!oli.Quantity}"/>
+                    </apex:outputText>	                
+	            </td>
+	            <td class="thinbottomborder" style="text-align:center">
+	                € <c:LocalNumber my_Number="{!oli.ListPrice__c}" />
+	            </td>
+	            <td class="thinbottomborder right" style="text-align:center">
+	                € <c:LocalNumber my_Number="{!oli.SalesPriceNet__c}" />
+	            </td>
+	            <td class="thinbottomborder right" style="text-align:left">
+	                € <c:LocalNumber my_Number="{!oli.TotalAmountGross__c}"/>
+	            </td>
+	            
+	        </tr>
+
+        </apex:repeat>
+
+        <tr>
+            <td colspan="3"></td>
+            <td colspan="4" class="right thinbottomborder"><b>Total Gross Budget</b></td>
+            <td class="right thinbottomborder" style="text-align:left">
+                € <c:LocalNumber my_Number="{!Opportunity.TotalAmountGross__c}" />
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3"></td>
+            <td colspan="4" class="right thinbottomborder"><b>Total Discount ({!Opportunity.Opportunity_Discount__c}%)</b></td>
+            <td class="right thinbottomborder" style="text-align:left">
+                € <c:LocalNumber my_Number="{! ( Opportunity.TotalAmountGross__c - Opportunity.TotalAmountBeforeID__c )}" />
+            </td>
+        </tr>
+
+        <apex:outputPanel rendered="{! Opportunity.IndirectDiscount__c > 0 }" layout="none">
+
+
+	        <tr>
+	            <td colspan="3"></td>
+	            <td colspan="4" class="right thinbottomborder"><b>Total Net Amount</b></td>
+	            <td class="right thinbottomborder" style="text-align:left">
+	                € <c:LocalNumber my_Number="{!Opportunity.TotalAmountBeforeID__c}" />
+	            </td>
+	        </tr>
+        
+
+	        <tr>
+	            <td colspan="3"></td>
+	            <td colspan="4" class="right thinbottomborder"><b>Agency Commission ({!Opportunity.IndirectDiscount__c}%)</b></td>
+	            <td class="right thinbottomborder" style="text-align:left">
+	                € <c:LocalNumber my_Number="{!Opportunity.IndirectDiscountAmount__c}" />
+	            </td>
+	        </tr>
+
+        </apex:outputPanel>
+
+        <tr>
+            <td colspan="3"></td>
+            <td colspan="4" class="right thinbottomborder"><b>Final Net Amount</b></td>
+            <td class="right thinbottomborder" style="text-align:left">
+                € <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c}" />
+            </td>
+        </tr>
+
+    </table><!-- End Line items -->
+    <br/>
+    <br/>
+    <!-- Notes -->
+    <table  class="lineitems" id="table_notes">
+        <tr>
+            <th width="35%"><b><span class="bold">Notes</span></b></th>
+        </tr>
+
+        <tr >
+            <td >{!Opportunity.Description}</td>
+        </tr>
+    </table>
+    <!-- End Notes -->
+
+    <br/>
+    <br/>
+
+    <!-- Contract Acknowledgment -->
+    <table class="lineitems" id="table_ContractAck">
+        <tr>
+            <th width="100%"><b><span class="bold">Confirmation of Contract</span></b></th>
+        </tr>
+        <tr>
+            <td width="100%">This offer is valid for 30 days and request for payment within 30 days. The material (according to IAB guidelines) can be sent to 'service@impreszion.nl'. The attached Terms and Conditions of 2dehands/2ememain are applicable to the services offered by eBay UK Ltd (Belgium Branch) under this Insertion Order.</td>
+        </tr>
+    </table>
+    <div style="page-break-before:always;"/>
+    <!-- End Contract Acknowledgment -->
+    <table width="100%" id="table5" class="signature">
+        <tr>
+            <th colspan="2"><b><span class="bold">Customer</span></b></th>
+        </tr>
+        <tr>
+            <td><b><span class="bold">Full name:</span></b></td>
+            <td>{{_es_signer_fullname}}</td>
+        </tr>
+        <tr>
+            <td><b><span class="bold">Signature:</span></b></td>
+            <td class="echosign_container">{{_es_signer_signature}}</td>
+            <td/>
+            <td/>
+        </tr>
+        <tr>
+            <td><b><span class="bold">Date:</span></b></td>
+            <td class="echosign_container" >{{_es_signer_date}}</td>
+            <td/>
+            <td/>
+        </tr>
+
+    </table>
+    
+</body>
+    
+</apex:page>

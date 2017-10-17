@@ -1,0 +1,76 @@
+<apex:page standardController="Opportunity" extensions="LPC_ProductConfigureRedirectorController"
+wizard="false" 
+showQuickActionVfHeader="false" 
+cache="false" 
+standardStylesheets="false" 
+showHeader="false" 
+setup="false" 
+showChat="false" 
+sidebar="false" 
+applyHtmlTag="false" 
+applyBodyTag="false">
+    <html>
+        <head>
+        	<meta name="viewport" content="width=device-width, initial-scale=1" />
+            <style>
+            	body{
+            		font-size: 14px !important;
+            		line-height: 20px;
+            	}
+                #loadingFirstLoad{
+                    position: fixed;
+                    width: 100px;
+                    height: 100px;
+                    top: 50%;
+                    margin-top: -50px;
+                    z-index: 10000;
+                    left: 0;
+                    right: 0;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                #loadingFirstLoad img{
+                    width: 100%;
+                }
+                #lightning{
+                    overflow-y: auto;
+                    margin: 0 auto;
+                    min-height: 1500px;
+                }
+                @media (max-width: 1024px){
+                	#loadingFirstLoad{
+                		top: 300px;
+                	}
+                }
+                @media (max-width: 768px) and (min-width: 768px){
+                	#loadingFirstLoad{
+                		top: 400px;
+                	}
+                }
+            </style>
+            <apex:includeScript value="{!URLFOR($Resource.libs, 'jquery/dist/jquery.js')}" />
+        </head>
+        <body>
+            <div id="loadingFirstLoad">
+                <img src="{!URLFOR($Resource.lightning_component, 'assets/images/spinners/slds_spinner_brand.gif')}" alt="Loading Conponent" />
+            </div>
+            <apex:includeLightning />
+        
+            <div id="lightning" />
+            
+            <script>     
+                console.log($Lightning);   
+                $Lightning.use("c:LPC_ProductConfigureV3", function() {
+                  $Lightning.createComponent("c:LPC_MainWindow",
+                  { oppId : "{!opportunity.id}", authToken : "{!$Api.Session_ID}" },
+                  "lightning",
+                  function(cmp) {
+                    // do some stuff
+                    document.getElementById('loadingFirstLoad').style.display = 'none';
+                  });
+                });
+
+            </script>
+        </body>
+    </html>
+</apex:page>

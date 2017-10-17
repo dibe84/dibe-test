@@ -1,0 +1,119 @@
+<apex:page wizard="false" 
+showQuickActionVfHeader="false" 
+cache="false" 
+standardStylesheets="false" 
+showHeader="false" 
+setup="false" 
+showChat="false" 
+sidebar="false" 
+applyHtmlTag="false" 
+applyBodyTag="false">
+    
+    <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <style>
+                body{
+                    padding: 0;
+                    margin: 0;
+                }
+                #loadingFirstLoad{
+                    position: fixed;
+                    width: 100px;
+                    height: 100px;
+                    top: 50%;
+                    margin-top: -50px;
+                    z-index: 10000;
+                    left: 0;
+                    right: 0;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                #loadingFirstLoad img{
+                    width: 100%;
+                }
+                .spinner,.spinner-big,.spinner-centered{
+                    display:inline-block;
+                    vertical-align:middle;
+                    width:20px;height:20px;
+                    background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgeD0iMCIgeT0iMCIgd2lkdGg9IjQxMiIgaGVpZ2h0PSI0MTIiIHZpZXdCb3g9IjUwIDUwIDQxMiA0MTIiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgNTAgNTAgNDEyIDQxMiIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHBhdGggZmlsbD0iIzg3QjkxOSIgZD0iTTI1NiA1MEMxNDIuMiA1MCA1MCAxNDIuMiA1MCAyNTZjMCAxMTMuOCA5Mi4yIDIwNiAyMDYgMjA2IDExMy44IDAgMjA2LTkyLjIgMjA2LTIwNkM0NjIgMTQyLjIgMzY5LjggNTAgMjU2IDUwek0yNTYgMTI0LjZjNzIuNiAwIDEzMS40IDU4LjggMTMxLjQgMTMxLjQgMCA3Mi42LTU4LjggMTMxLjQtMTMxLjQgMTMxLjQgLTcyLjYgMC0xMzEuNC01OC44LTEzMS40LTEzMS40QzEyNC42IDE4My40IDE4My40IDEyNC42IDI1NiAxMjQuNnpNNzAgMjU2YzAtNDkuNyAxOS4zLTk2LjQgNTQuNS0xMzEuNVMyMDYuMyA3MCAyNTYgNzB2MzQuNmMtODMuNSAwLTE1MS40IDY3LjktMTUxLjQgMTUxLjQgMCA0MS44IDE3IDc5LjcgNDQuNSAxMDcuMWwtMjQuMyAyNC44Yy0wLjEtMC4xLTAuMy0wLjItMC40LTAuNEM4OS4zIDM1Mi40IDcwIDMwNS43IDcwIDI1NnoiLz48L3N2Zz4=);
+                    background-repeat:no-repeat;
+                    background-size:contain;
+                    animation-duration:2s;
+                    -webkit-animation-duration:2s;
+                    animation-iteration-count:infinite;
+                    animation-name:rotate;
+                    animation-timing-function:linear;
+                    -webkit-animation-iteration-count:infinite;
+                    -webkit-animation-name:rotate;
+                    -webkit-animation-timing-function:linear;
+                }
+                .spinner-big,.spinner-centered{width:50px;height:50px}
+                .spinner-centered {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    z-index: 10;
+                }
+                .spinner-modal{
+                    width: 100%;
+                    height: 100%;
+                    position: fixed;
+                    background-color: rgba(0,0,0,0.1);
+                    top: 0;
+                    left: 0;
+                    overflow: hidden;
+                }
+                
+                @keyframes rotate{
+                    from{transform:rotate(0deg)}to{transform:rotate(360deg)}
+                }
+                @-webkit-keyframes rotate{
+                    from{-webkit-transform:rotate(0deg)}to{-webkit-transform:rotate(360deg)}
+                }
+                @media (max-width: 1024px){
+                    #loadingFirstLoad{
+                        top: 300px;
+                    }
+                }
+                @media (max-width: 768px) and (min-width: 768px){
+                    #loadingFirstLoad{
+                        top: 400px;
+                    }
+                }
+            </style>
+            <apex:stylesheet value="{!$Resource.LSC_Resources + '/css/gtaus-contact-us-form.css'}"/>
+        </head>
+        <body>
+            <div id="loadingFirstLoad">
+                <img src="{!URLFOR($Resource.lightning_component, 'assets/images/spinners/slds_spinner_brand.gif')}" alt="Loading Conponent" />
+            </div>
+            <apex:includeLightning />
+        
+            <div id="lightning" />
+            
+            <script type="text/javascript">
+         		var mapFSByType = {
+         			autos : 'GTAUS_Autos',
+         			jobs : 'GTAUS_Jobs'
+         		};
+	          	var type = '{!JSENCODE($CurrentPage.parameters.type)}';
+	          	var fieldSetName = typeof mapFSByType[type] == 'undefined'? '':mapFSByType[type];
+	          	
+                $Lightning.use("c:GTAUS_RegistrationFormApp", function() {
+                    $Lightning.createComponent("c:GTAUS_RegistrationForm",
+                    { 
+	                    userInformation : fieldSetName,
+	                    type : type
+                    },
+                    "lightning",
+                    function(cmp) {
+                       // do some stuff
+                       document.getElementById('loadingFirstLoad').style.display = 'none';
+                       document.getElementById('lightning').className = '';
+                    });
+                });
+            </script>
+        </body>
+    </html>
+</apex:page>

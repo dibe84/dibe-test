@@ -1,0 +1,195 @@
+<apex:page standardController="Opportunity" extensions="AdSalesIOExtension" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderas="pdf">
+<head>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+    <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_ECITA.css')}" html-media="print"/>
+</head>
+<body>
+  <div class="header">
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_ECITA.jpg')}" title="logo" style="float:left"/>
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_ECITA_Automobile.jpg')}" title="logo" style="float:right; margin-top:20px;"/>
+    </div>
+    <div class="footer">
+
+                <div>
+                 Marktplaats B.V. Wibautstraat 224, 1097 DN Amsterdam (The Netherlands),<br/>
+				 VAT number: 803.603.307.B.01 Chamber of Commerce: 28058712
+        		</div>
+
+    </div>
+    <div class="content" >
+    <h1>ORDINE DI ACQUISTO </h1>
+    <p>
+    Fatto salvo quanto espressamente indicato nel presente ordine di acquisto di servizi ("Ordine di Acquisto"), l'Ordine di Acquisto è soggetto all'applicazione dei termini e delle condizioni generali qui allegate ("Condizioni Generali") di Marktplaats B.V., società costituita ai sensi del diritto dei Paesi Bassi, con sede legale in Wibautstraat 224, 1097 DN Amsterdam, con P. IVA n. 803.603.307.B.01 e iscrizione al registro delle imprese di Amsterdam n. 28058712.
+
+    </p>
+    <table class="dotted_border">
+        <tr>
+           <th colspan="4">Azienda Acquirente</th>
+        </tr>
+        <apex:outputpanel rendered="{!Opportunity.Billing_Account__c != Opportunity.AccountId}" layout="none">
+            <tr>
+            <td>Cliente di fatturazione:</td>
+            <td> {!Opportunity.Billing_Account__r.Name} </td>
+            <td >Ragione Sociale:</td>
+          <td>{!Opportunity.Account.Name}</td>
+      </tr>
+        </apex:outputpanel>
+        <apex:outputpanel rendered="{!Opportunity.Billing_Account__c == Opportunity.AccountId}" layout="none">
+            <tr>
+            <td>Ragione Sociale:</td>
+          <td class="bold">{!Opportunity.Account.Name}</td>
+            <td></td>
+            <td></td>
+            </tr>
+        </apex:outputpanel>
+      <tr>
+        <td>Partita IVA numero:</td>
+        <td class="bold">{!Opportunity.Billing_Account__r.Company_VAT_No__c}</td>
+		<td>Numero REA:</td>
+        <td class="bold">{!Opportunity.Billing_Account__r.Company_Reg_No__c}</td>
+      </tr>
+      <tr>
+        <td>Indirizzo di fatturazione:</td>
+        <td class="bold">{!Opportunity.Billing_Account__r.BillingStreet}<br/>{!Opportunity.Billing_Account__r.BillingCity} {!Opportunity.Billing_Account__r.BillingPostalcode}<br/> {!Opportunity.Billing_Account__r.BillingCountry}</td>
+        <td>Numero di contratto:</td>
+        <td class="bold">{!Opportunity.IOnumber__c}</td>
+      </tr>
+      <tr>
+        <td>Nome de legale representante:</td>
+        <td class="bold">{!LEFT(Opportunity.Primary_Contact__r.FirstName,1)}. {!Opportunity.Primary_Contact__r.LastName}</td>
+        <td>Il vostro riferimento:</td>
+        <td class="bold">{!Opportunity.P_O_Number__c}</td>
+      </tr>
+      <tr>
+        <td>Telefono:</td>
+        <td class="bold">{!Opportunity.Primary_Contact__r.Phone}</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>Email:</td>
+        <td class="bold">{!Opportunity.Primary_Contact__r.Email}</td>
+        <td>Contatto finanziario</td>
+          <td class="bold">{!Opportunity.Billing_Account__r.Finance_Contact__r.Email}</td>
+      </tr>
+    </table>
+    <br/>
+    <table class="dotted_border">
+        <tr>
+           <th colspan="4">Persona di riferimento</th>
+        </tr>
+        <tr>
+            <td>Entità legale:</td>
+            <td class="bold">Marktplaats B.V.</td>
+            <td>Contatto:</td>
+            <td class="bold">{!Opportunity.Owner.FirstName}</td>
+        </tr>
+        <tr>
+            <td>Email:</td>
+            <td class="bold">serviziopremium@kijiji.it</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+    <br/>
+    <hr />
+    <br/>
+    <table class="solid_border">
+      <tr>
+          <th class="top"></th>
+          <th colspan="1" class="top left"></th>
+          <th colspan="3" class="top left">Mese</th>
+      </tr>
+      <tr>
+        <th class="top ">Pacchetto</th>
+        <th class="top" >Data di inizio</th>
+        <th class="top left" >
+                  Tariffa
+          </th>
+          <th class="top" >
+              <apex:outputPanel rendered="{! isDiscountSet }" layout="inline">
+                  Sconto
+              </apex:outputPanel>
+          </th>
+        <th class="top right" >
+                  Totale
+        </th>
+      </tr>
+      <apex:repeat var="oli" value="{!sortrecord}" >
+          <tr>
+              <td class="bottom left">{!oli.DefaultLineDescription__c}</td>
+              <td class="bottom" >{!day(oli.from_Date__c)}/{!month(oli.from_Date__c)}/{!year(oli.from_Date__c)}</td>
+              <td class="bottom left">
+                   €<c:LocalNumber my_Number="{!oli.ListPrice__c}" />
+              </td>
+                 <td class="bottom">
+                  <apex:outputPanel rendered="{!oli.SalesPriceNet__c != oli.ListPrice__c}" layout="inline">
+                  €<c:LocalNumber my_Number="{! oli.SalesPriceNet__c - oli.ListPrice__c }" />
+                  </apex:outputPanel>
+               </td>
+            <td class="bottom right">
+                €<c:LocalNumber my_Number="{!oli.SalesPriceNet__c}"/>
+            </td>
+          </tr>
+      </apex:repeat>
+      <tr style="height:25px;"/>
+      <tr>
+          <td></td>
+          <td></td>
+          <td></td>
+        <td colspan="2" class="top bottom left">Importo netto</td>
+          <td class="top bottom right">€<c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c}" /></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+          <td colspan="2" class="bottom left">IVA&nbsp;
+              <c:LocalNumber rendered="{!Opportunity.Billing_Account__r.Apply_VAT__c}" my_Number="{! Opportunity.Billing_Account__r.VAT__c }" />
+              <apex:outputText rendered="{! !Opportunity.Billing_Account__r.Apply_VAT__c }" value="0" />
+              %</td>
+          <td class="bottom right">€<c:LocalNumber my_Number="{!Opportunity.VatAmount__c}"/></td>
+      </tr>
+      <tr>
+         <td></td>
+         <td></td>
+         <td></td>
+          <td colspan="2" class="bottom left">Importo lordo</td>
+          <td class="bottom right">€ <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c+Opportunity.VatAmount__c}"/></td>
+      </tr>
+    </table>
+    <table class="lineitems" id="table_ContractAck">
+        <tr>
+            <th width="100%"><b><span class="bold">Conferma del contratto</span></b></th>
+        </tr>
+        <tr>
+            <td width="100%">Ai sensi degli articoli 1341 e 1342 del Codice Civile, dichiaro espressamente di aver letto, compreso ed accettato i seguenti articoli delle Condizioni Generali allegate all'ordine di acquisto: 6 (Rapporto tra le parti); 8 (Proprietà intellettuale, segreti aziendali e commerciali); 11.2 (Risoluzione e recesso); 12 (Cessione, trasferimento e subappalto); 13 (Manleva e limitazione di responsabilità);  17 (Legge applicabile e foro competente)</td>
+        </tr>
+    </table>
+      <div style="page-break-before:always;"/>
+      <hr />
+    <table class="dotted_border">
+       <tr>
+           <td class="vacenter">Ragione Sociale:</td>
+           <td class="">{!Opportunity.Billing_Account__r.Name}</td>
+       </tr>
+      <tr>
+        <td class="vacenter">Nome:</td>
+        <td class="">{{_es_signer_fullname}}</td>
+      </tr>
+      <tr>
+        <td class="vacenter">Qualifica:</td>
+        <td class=""> {{*_es_signer_title}}</td>
+      </tr>
+      <tr>
+        <td class="vacenter">Data:</td>
+        <td class="">{{_es_signer_date}}</td>
+      </tr>
+      <tr>
+        <td class="vacenter">Firma:</td>
+        <td class="echosign_container" >{{_es_signer_signature}}</td>
+      </tr>
+    </table>
+</div>
+</body>
+</apex:page>

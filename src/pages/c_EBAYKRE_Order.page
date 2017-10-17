@@ -1,0 +1,545 @@
+<apex:page sidebar="false" showHeader="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" controller="c_BaseOrderController">
+
+    <link rel="stylesheet" href="/resource/1449073532000/c_EBAYKRE_CSS" type="text/css" />
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.66.0-2013.10.09/jquery.blockUI.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.0.5/bluebird.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script type="text/javascript">
+        var order = null;
+        var portalProductMap = {!portalProductMap};
+        var pricingMap = {!pricingMap};
+        var currencyMap = {!currencyMapJSON};
+        
+        function serializeForm($form){
+            return _.object(_.map($form.serializeArray(), function(item){return [item.name, item.value]; }));
+        }
+        
+        /* Step map: 
+                1: Select product
+                2: Enter/verify information
+                3: Confirmation
+        */
+        
+        function Order() {
+            this.currentStep = null;
+            this.isFinalized = false;
+            this.initialize();
+        }
+        
+        Order.prototype = {
+            initialize: function() {
+                // Check if we have any existing order....
+                this.currentStep = 1;
+            },
+            next: function() {
+                // Should Block UI here
+                this.lock();
+                switch(this.currentStep) {
+                    case 1:
+                        if (this.validate('productSelected')) {
+                            $("td#selected_package").html(portalProductMap[this.selectedProductId].Name);
+                            $("td#order_total").html(currencyMap[pricingMap[this.selectedProductId].CurrencyIsoCode] + ' ' + pricingMap[this.selectedProductId].UnitPrice);
+                            this.currentStep = 2;
+                            this.transition(2);
+                        } else {
+                            this.throw('No valid product was selected');
+                        }                        
+                        this.unlock();
+                        break;
+                    case 2:
+                        $('input').removeClass('invalid');
+                        $('div.customCheckbox label').removeClass('invalid');
+                        var fn = portalProductMap[this.selectedProductId].OrderMethod__c == 'Case' ? this.submitCase.bind(this) : this.save.bind(this);
+                        fn()
+                            .then((function(result) {
+                                console.log('result', result);
+                                this.currentStep = 3;
+                                this.transition(3);
+                                this.unlock();
+                            }).bind(this))
+                            .catch((function(err) {
+                                if (err.errorFieldMap) {
+                                    for (var x in err.errorFieldMap) {
+                                        $('input[name="'+x+'"]').addClass('invalid');
+                                        $('div.customCheckbox label[for="'+x+'"]').addClass('invalid');
+                                    }
+                                }
+                                this.throw(err);
+                                this.unlock();
+                            }).bind(this));                        
+                        break;
+                    default:
+                        this.throw('You are trying to do something impossible here...');
+                        break;
+                }
+            },
+            prev: function() {
+                this.lock();
+                switch(this.currentStep) {
+                    case 1:
+                        return false;
+                        break;
+                    case 2:
+                        this.currentStep = 1;
+                        this.transition(1);
+                        break;
+                    default:
+                        this.throw('You are trying to navigate backward while there is no previous step');
+                        break;
+                }
+                this.unlock();
+                parent.postMessage({frameHeight: $("body").height()}, "*");
+            },
+            transition: function(page) {
+                $("div.portal_order_page").hide();
+                $("div#order_"+page).show();
+                parent.postMessage({frameHeight: $("body").height()}, "*");
+            },
+            getPostString: function() {
+                var data = serializeForm($("form"));
+                if (data.account_vatnr != undefined && data.account_vatnr != null && data.account_vatnr != '') {
+                    data.account_vatnr = 'DE' + data.account_vatnr;
+                }
+                data.billing_country = 'DE';
+                return JSON.stringify(data);
+            },
+            save: function() {
+                return new Promise((function(resolve, reject) {
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.c_BaseOrderController.save}',
+                        this.getPostString(),
+                        null,
+                        function(result, event){
+                            if (event.status) {
+                                // Process;
+                                if (result.success) {
+                                    resolve(result);
+                                } else {
+                                    reject(result);
+                                }
+                            } else if (event.type === 'exception') {
+                                reject(event.message);
+                            } else {
+                                reject(event.message);
+                            }
+                        }, 
+                        {escape: true}
+                    );
+                }).bind(this));
+            },
+            validate: function(type) {
+                switch(type) {
+                    case "productSelected":
+                        if (this.selectedProductId != null) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    case "input":
+                        var error = false;
+                        //$("")
+                        
+                        break;
+                }
+            },
+            process: function() {
+            
+            },
+            promptCaseCreation: function() {
+                this.transition('case');
+            },
+            previousCase: function() {
+                this.selectedProductId = null;
+                this.transition(1);
+            },
+            submitCase: function() {
+                return new Promise((function(resolve, reject) {
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.c_BaseOrderController.submitCase}',
+                        this.getPostString(),
+                        (function(result, event){
+                            console.log('SubmitCase result', result, event);
+                            if (event.status) {
+                                // Process;
+                                if (result.success) {
+                                    $("#order_3").html('<div class="sectionbox"><h1 class="headline-medium">Vielen Dank für Ihre Buchungsanfrage!</h1><p>Für Ihre Buchung werden wir Sie zeitnah kontaktieren.</p></div>');
+                                    resolve(result);
+                                } else {
+                                    reject(result);
+                                }
+                            } else if (event.type === 'exception') {
+                                reject(event.message);
+                            } else {
+                                reject(event.message);
+                            }
+                        }).bind(this), 
+                        {escape: true}
+                    );
+                }).bind(this));                
+            },
+            selectProduct: function(portalProductId) {
+                if (portalProductMap[portalProductId] != undefined) {
+                    this.selectedProductId = portalProductId;
+                    $("input[name='product_id']").val(portalProductId);
+                    $("span[id='package_name']").html(portalProductMap[portalProductId].ShortName__c);
+                    $("span[id='package_price']").html((portalProductMap[portalProductId].OrderMethod__c == 'Case' ? ' ab ' : '') + pricingMap[portalProductId].salesPriceNet + ' ' + currencyMap[pricingMap[portalProductId].currencyCode]);
+                    $("span[id='per_month']").html((portalProductMap[portalProductId].Product__r.Billing_Category__c == 'Subscription_MonthlyProRata' ? '/Monat' : '') + (portalProductMap[portalProductId].OrderMethod__c == 'Case' ? ' anfragen' : ' buchen') );
+                    
+                    if (portalProductMap[portalProductId].OrderMethod__c == 'Case') {
+                        $("#wir_kontaktieren").show();
+                    } else {
+                        $("#wir_kontaktieren").hide();
+                    }
+
+                    switch(portalProductMap[portalProductId].OrderMethod__c) {
+                        case "Self-Service":
+                            this.disableCaseView();
+                            this.next();
+                            break;
+                        case "Case":
+                            this.enableCaseView();
+                            this.next();
+                            break;
+                        default:                        
+                            break;
+                    }                    
+                } else {
+                    this.throw('There is currently a problem with this product');
+                }
+            },
+            caseViewItems: function() {
+                return {
+                    hide: [
+                        //$("fieldset[id='paymentDetails']"),
+                        //$("div.billingInfo"),
+                        $("div#order_footer")
+                    ],
+                    show: [
+                        $("div#case_footer")
+                    ]
+                };
+            },
+            enableCaseView: function() {
+                var items = this.caseViewItems();
+                $(items.hide).each(function() { this.hide(); });
+                $(items.show).each(function() { this.show(); });
+            },
+            disableCaseView: function() {
+                var items = this.caseViewItems();
+                $(items.hide).each(function() { this.show(); });
+                $(items.show).each(function() { this.hide(); });
+            },
+            changePaymentMethod: function() {
+                var selectedMethod = $("select[name='payment_method'] option:selected").val();
+                switch(selectedMethod) {
+                    case "directdebit":
+                        $(".sepa_only").show();
+                        break;
+                    case "invoice":
+                        $(".sepa_only").hide();
+                        $("input[name='bankaccount_name']").val('');
+                        $("input[name='bankaccount_iban']").val('');
+                        $("input[name='checkbox_sepa']").val(false);
+                        $("input[name='checkbox_sepa']").attr('checked', false);
+                        break;
+                }
+            },
+            lock: function() {
+                $.blockUI({ css: { backgroundColor: '#fff', color: '#fff', borderRadius: '10px', border: '2px solid green', padding: '20px'}, message: '<c:GetDocumentLink searchString="Generic_Images/Spinner GIF" returnType="img" />' });
+            },
+            unlock: function() {
+                $.unblockUI();
+            },
+            throw: function(msg) {
+                $.blockUI({ css: { backgroundColor: '#fff', color: '#fff', borderRadius: '10px', border: '2px solid green', padding: '20px'}, message: '<h1>Error</h1><p>' + msg +'</p><button onclick="order.unlock(); return false;">Continue</button>' });
+            }
+        }
+        
+        window.onload = function() {
+            order = new Order();
+            $("input").on('focus', function() {
+                $(this).removeClass('invalid');
+                
+            });
+            
+            $("input[type=checkbox]").on('change', function() {
+                $(this).siblings().each(function(itm) { $(this).removeClass('invalid') });
+            });
+            
+            
+        }
+    </script>
+    <div id="order_1" class="portal_order_page">
+        <h1 class="headline-medium ">Meine Anzeigenpakete</h1>
+        <apex:outputText rendered="{!activeSubscriptionProduct==null}">
+            <apex:outputText rendered="{!hasActiveOrder == false}">
+            <p>Buchen Sie hier Ihr Anzeigenpaket für den Import von Immobilien-Anzeigen mit Ihrer Maklersoftware.</p>
+        
+            <apex:repeat value="{!availablePortalProductGroupings}" var="grouping">
+                <div class="l-row">
+                    <apex:outputText rendered="{!grouping.ShowGroupingName__c}">
+                    <div class="name">
+                        {!grouping.Name}
+                    </div>
+                    </apex:outputText>
+                    <apex:repeat value="{!availablePortalProductGroupings[grouping]}" var="product">
+                        <div class="l-col {!IF(activeSubscriptionProduct==null,'',IF(activeSubscriptionProduct.Id==product.Id,'', 'inactive'))}">
+                            <div class="featurebox">
+                                <header class="featurebox--header">
+                                    <h2 class="featurebox--title">{!product.Name} {!IF(activeSubscriptionProduct==null,'',IF(activeSubscriptionProduct.Id==product.Id,'', ''))}</h2>
+                                    <div class="featurebox--addon">
+                                        <apex:outputText rendered="{!product.IsFromPrice__c == true}">ab </apex:outputText> 
+                                        <apex:outputText rendered="{!portalProductToPrice[product.Id].isDiscounted}">
+                                            <s><apex:outputText value="{0,number,#,##0}"><apex:param value="{!portalProductToPrice[product.Id].listPrice}" /></apex:outputText>&nbsp;{!currencyMap[portalProductToPrice[product.Id].currencyCode]}</s>&nbsp; 
+                                            <apex:outputText value="{0,number,#,##0}"><apex:param value="{!portalProductToPrice[product.Id].salesPriceNet}"/></apex:outputText>&nbsp;{!currencyMap[portalProductToPrice[product.Id].currencyCode]}
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!!portalProductToPrice[product.Id].isDiscounted}">
+                                            <apex:outputText value="{0,number,#,##0}"><apex:param value="{!portalProductToPrice[product.Id].salesPriceNet}" /></apex:outputText>&nbsp;{!currencyMap[portalProductToPrice[product.Id].currencyCode]}
+                                        </apex:outputText>
+                                        <apex:outputText rendered="{!CONTAINS(product.Product__r.Billing_Category__c, 'Subscription_MonthlyProRata')}"> / Monat in 2016*</apex:outputText>
+                                    </div>
+                                </header>
+                                <div class="featurebox--body">
+                                    <h3 class="headline-small">{!product.Headline__c}</h3>
+                                    <p>{!product.Details__c}</p>
+                                    <apex:outputText rendered="{!activeSubscriptionProduct.Id == null}">
+                                        <button onclick="order.selectProduct('{!product.Id}'); return false;">Paket auswählen</button>
+                                    </apex:outputText>
+                                </div>
+                            </div>
+                        </div>
+                    </apex:repeat>
+                </div>
+            </apex:repeat>
+                <div>
+                        <p>
+                            Alle Preise verstehen sich exklusive Mehrwertsteuer.
+                        </p>
+                        <p>
+                            &nbsp; * Der reduzierte Einführungspreis für Ihr Anzeigenpaket gilt für das Jahr 2016. Danach fällt der reguläre Preis an. Jederzeit zum Ende des Folgemonats kündbar.
+                        </p>
+                </div>
+            </apex:outputText>
+            <apex:outputText rendered="{!hasActiveOrder == true}">
+                <div id="order_1">
+                    <apex:outputText rendered="{!activeOrderIsPortalOrder==true}">
+                        Ihre Buchung wird gerade bearbeitet. Bitte gedulden Sie sich noch einen Moment...
+                    </apex:outputText>
+                    <apex:outputText rendered="{!activeOrderIsPortalOrder==false}">
+                        Wir haben Ihre Anfrage zur Buchung des XL-Pakets erhalten. Wir werden Sie zeitnah zu Ihrer Buchung kontaktieren.
+                    </apex:outputText>
+                </div>
+            </apex:outputText>
+        </apex:outputText>
+        <apex:outputText rendered="{!activeSubscriptionProduct!=null}">
+            <div>
+                Sie haben {!activeSubscriptionProduct.Name} gebucht.<br />
+                Wenn Sie Ihre Buchung ändern möchten, kontaktieren Sie uns bitte unter <a href="mailto:immobilien@ebay-kleinanzeigen.de">immobilien@ebay-kleinanzeigen.de</a>.
+            </div>
+        </apex:outputText>
+    </div>
+        
+    <div id="order_2" class="hidden portal_order_page">
+        <h1 class="headline-medium">Anzeigenpaket <span id="package_name">[Package]</span> für <span id="package_price">[Preis]</span> <span id="per_month">/Monat</span> <span class="legend-addon">Pflichtfelder sind mit Sternchen * gekennzeichnet!</span></h1>
+        <p id="wir_kontaktieren" style="display: none;">
+            Wir kontaktieren Sie wegen eines Angebots.
+        </p>
+        <a href="#" onclick="order.prev(); return false">ändern</a>
+        <form id="invoice-frm" action="#" method="post">
+        <input type="hidden" name="product_id" value="" />
+        <div id="userInvoiceDetails">
+            <fieldset  id="paymentDetails">
+                <legend class="formlegend headline-medium">Bezahlmethode</legend>
+                <div class="l-row">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="payment_method">Bezahlmethode</label>
+                            <div class="formgroup-input">
+                                <select id="payment_method" name="payment_method" class="formcontrol" readonly="readonly" onchange="order.changePaymentMethod()">
+                                    <option value="directdebit">SEPA-Lastschrift</option>
+                                    <option value="invoice">Rechnungskauf</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>    
+                <div class="l-row sepa_only">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="bankaccount_name">Kontoinhaber</label>
+    
+                            <div class="formgroup-input">
+                                <input id="bankaccount_name" name="bankaccount_name" class="formcontrol" type="text" value="{!currentAccount.BankAccountHolderName__c}" maxlength="50"/></div>
+                        </div>
+                    </div>
+                </div>    
+                <div class="l-row sepa_only">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="bankaccount_iban">IBAN</label>
+    
+                            <div class="formgroup-input">
+                                <input id="bankaccount_iban" name="bankaccount_iban" class="formcontrol" type="text" value="{!currentAccount.Bank_AccountNumber__c}" maxlength="50"/></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="l-row sepa_only">
+                    <div class="a-span-17 l-col">
+                        <p>
+                            Mit diesem SEPA-Lastschriftmandat ermächtige ich Marktplaats B.V., Zahlungen von meinem Konto mittels Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die von Marktplaats B.V. auf mein Konto gezogenen Lastschriften einzulösen.
+                            Der Rechnungsbetrag zu Ihrer Vertragsnummer wird automatisch monatlich als wiederkehrende Zahlung von Ihrem Konto abgebucht.
+                        </p>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset id="companyDetails">
+                <legend class="formlegend headline-small">Rechnungsadresse</legend>
+                <div class="l-row ">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="account_name">Firmenname</label>
+    
+                            <div class="formgroup-input">
+                                <input id="account_name" name="account_name" class="formcontrol" type="text" value="{!currentAccount.Name}" maxlength="50"/></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="l-row ">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="contact_firstname">Vorname</label>
+    
+                            <div class="formgroup-input">
+                                <input id="contact_firstname" name="contact_firstname" class="formcontrol" type="text" value="{!currentContact.FirstName}" maxlength="50"/></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="l-row ">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="contact_lastname">Nachname</label>
+    
+                            <div class="formgroup-input">
+                                <input id="contact_lastname" name="contact_lastname" class="formcontrol" type="text" value="{!currentContact.LastName}" maxlength="50"/></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="l-row billingInfo">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="billing_street">Straße/Nr.</label>    
+                            <div class="formgroup-input">
+                                <input id="billing_street" name="billing_street" class="formcontrol" type="text" value="{!currentAccount.BillingStreet}" maxlength="50"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="l-row billingInfo">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="billing_postalcode">PLZ</label>
+    
+                            <div class="formgroup-input">
+                                <input id="billing_postalcode" name="billing_postalcode" class="formcontrol" type="text" value="{!currentAccount.BillingPostalCode}" maxlength="5"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="l-row billingInfo">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="billing_city">Ort</label>
+    
+                            <div class="formgroup-input">
+                                <input id="billing_city" name="billing_city" class="formcontrol" type="text" value="{!currentAccount.BillingCity}" maxlength="50"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="l-row billingInfo">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label" for="billing_country">Land</label>
+                            <div class="formgroup-input-inline">
+                                <select id="billing_country" name="billing_country" class="formcontrol" readonly="readonly" disabled="disabled">
+                                    <option value="DE">Deutschland</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="l-row l-container-row billingInfo">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label" for="account_vatnr">Umsatzsteuer-IdNr.&nbsp;
+                            </label>
+    						<div class="formgroup-input">
+                                <div class="formgroup-input-inline">
+                                    <input type="text" value="DE-" readonly="readonly" disabled="disabled" style="width:9%" class="formcontrol" />
+                                    <input id="account_vatnr" name="account_vatnr" class="formcontrol" style="width:90%" type="text" value="{!RIGHT(currentAccount.Company_VAT_No__c,9)}" maxlength="9" />
+                                </div>
+                                <small>Bitte geben Sie eine gültige Umsatzsteuer-IdNr. ein (DE und neun Ziffern) oder lassen Sie das Feld leer. Ohne ID oder mit ungültiger ID werden auf der Rechnung 19% Mwst. zzgl. ausgewiesen.</small>
+                            </div>
+                    	</div>
+                    </div>
+                </div>
+            </fieldset>
+            <!--<fieldset  id="paymentDetails">
+                <legend class="formlegend headline-medium">Agreements &laquo;TEXT_5&raquo;</legend>
+                <div class="l-row">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="checkbox_tc" value="true">Agree with T &amp; Cs (&laquo;TEXT_6&raquo;)</label>
+                            <div class="formgroup-input customCheckbox">
+                                <input type="checkbox" name="checkbox_tc" id="checkbox_tc" class="formcontrol" />
+                                <label for="checkbox_tc"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="l-row sepa_only">
+                    <div class="a-span-17 l-col">
+                        <div class="formgroup">
+                            <label class="formgroup-label-mandatory" for="checkbox_sepa" value="true">Agree with SEPA last-schrift (&laquo;TEXT_7&raquo;)</label>
+                            <div class="formgroup-input customCheckbox">
+                                <input type="checkbox" class="formcontrol" name="checkbox_sepa" id="checkbox_sepa" />
+                                <label for="checkbox_sepa"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>-->
+            </div>
+            
+            <div class="sectionbox" id="order_footer">
+                 <h3 class="headline-small">Fälligkeit und Zahlung</h3>
+                 <p>Der monatliche Betrag (s.o.) wird jeweils mit Ablauf eines Kalendermonats in Rechnung gestellt und ist sofort zur Zahlung fällig. Für den Fall der Vereinbarung der Zahlungsmethode SEPA-Lastschrift, wird der Zeitraum für die Vorabinformation auf 5 Tage verkürzt. In der jeweiligen Rechnung wird das Fälligkeitsdatum für die Lastschrift angegeben.</p>
+
+                 <h3 class="headline-small">Leistungsumfang</h3>
+                 <p>Sie sind berechtigt, die dem ausgewählten Paket entsprechende Anzahl von Inseraten pro Monat zu eBay Kleinanzeigen zu exportieren. Nicht genutztes Volumen eines Monats kann nicht in einen anderen Monat übertragen werden. Im Paket S dürfen Sie nicht mehr als 10, im Paket M nicht mehr als 25 Inserate gleichzeitig auf eBay Kleinanzeigen aktiv haben.</p>
+        
+                 <h3 class="headline-small">Laufzeit und Kündigung</h3>
+                 <p>Der Vertrag über das Anzeigenpaket wird auf unbestimmte Zeit geschlossen. Der Vertrag  kann jederzeit von einer Vertragspartei zum Ende des Folgemonats ordentlich gekündigt werden.</p>
+                 <p>Es gelten die <a href="http://www.ebay-kleinanzeigen.de/nutzungsbedingungen.html" target="_blank">Allgemeinen Nutzungsbedingungen</a> für eBay Kleinanzeigen.</p>
+                 <p>Mit Klick auf "Jetzt buchen", geben Sie eine verbindliche Bestellung des von Ihnen ausgewählten Pa-kets ab. Bitte kontrollieren Sie Ihre Eingaben und Auswahl noch einmal sorgfältig auf ihre Richtigkeit hin, bevor Sie auf "Jetzt buchen" klicken. Korrekturen von Eingabefehler können Sie direkt in dem jeweiligen Feld vornehmen. Nach Abgabe Ihrer verbindlichen Bestellung erhalten Sie ein Bestäti-gungs-E-Mail über den Zugang Ihrer Bestellung. Mit der Bestätigungs-E-Mail kommt der Vertrag  zu Stande (als Vertragssprache steht nur Deutsch zur Verfügung). Die Bestätigungs-E-Mail enthält u.a. den oben aufgeführten Vertragstext, den wir auch speichern. </p>
+        
+                 <button class="button" type="submit" onclick="order.next(); return false;">Jetzt buchen</button>
+            </div>
+            
+            <div class="sectionbox" id="case_footer" style="display: none">
+                 <button class="button" type="submit" onclick="order.next(); return false;">Jetzt anfragen</button>
+            </div>
+        </form>
+    </div>
+    <div id="order_3" class="hidden portal_order_page">
+        <div class="sectionbox">
+            <h1 class="headline-medium">Vielen Dank für Ihre Buchungsanfrage!</h1>
+            <p>Wir werden Ihnen eine Buchungsbestätigung per Email zuschicken.</p>
+            <p>
+                Wenn Sie diese erhalten haben, können Sie mit dem Exportieren beginnen!
+            </p>
+        </div>
+    </div>
+</apex:page>

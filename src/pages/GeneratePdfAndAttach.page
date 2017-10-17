@@ -1,0 +1,19 @@
+<apex:page standardController="Opportunity" showHeader="true" extensions="IODisplayController" action="{!createIO}">
+
+	<apex:sectionHeader title="Generate Agreement and Attach PDF" subtitle="{!opportunity.Name}"/>
+	<apex:pagemessages />
+ <apex:form >
+   <apex:outputPanel rendered="{! !showErrorMessage}" >
+       <p>
+           An IO agreement including a Mandate form has been prepared, please press next to continue.
+   	   </p>
+   </apex:outputPanel>
+   <apex:pageBlock >
+        <apex:pageBlockButtons location="bottom">
+            	<apex:commandButton value="Next" action="{!attachRequiredPDFs}" rendered="{! !showErrorMessage}"/>
+                <apex:commandButton action="{!cancel}" value="Exit" rendered="{!showErrorMessage}" />
+        </apex:pageBlockButtons>
+    </apex:pageBlock>
+</apex:form>
+
+</apex:page>

@@ -1,0 +1,20 @@
+<apex:page controller="DEV_ObjectListController">
+	<apex:dataTable value="{!s_Objects}" var="obj" id="theTable" rowClasses="odd,even" styleClass="tableClass">
+		<apex:column >
+			<apex:facet name="header">Data</apex:facet>
+			<apex:outputLink value="/{!obj.objectPrefix}">list</apex:outputLink>
+		</apex:column>
+		<apex:column >
+		    <apex:facet name="header">Name</apex:facet>
+			<apex:outputText value="{!obj.objectName}"/>
+		</apex:column>
+		<apex:column >
+			<apex:facet name="header">Prefix</apex:facet>
+			<apex:outputText value="{!obj.objectPrefix}"/>
+		</apex:column>
+		<apex:column >
+			<apex:facet name="header">Custom</apex:facet>
+			<apex:outputText value="x" rendered="{!obj.isCustom}"/>
+		</apex:column>
+	</apex:dataTable>
+</apex:page>

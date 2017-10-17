@@ -1,0 +1,263 @@
+<apex:page standardController="Opportunity" extensions="AdSalesIOExtension" showHeader="false" applyHtmlTag="false"
+           applyBodyTag="false" renderas="pdf">
+    <head>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_THBEL.css')}" html-media="print"/>
+    </head>
+    <body>
+    <div class="header">
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_THBELAU_FR.jpg')}" title="logo" width="34%" style="float:left"/>
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_THBELAU_NL.jpg')}" title="logo" width="32%" style="float:right"/>
+    </div>
+    <div class="footer">
+
+        <div>Pagina <span class="pagenumber"/> van <span class="pagecount"/></div>
+
+    </div>
+    <div class="content">
+
+        <table>
+            <tr>
+                <td style="font-type:Arial;text-align:center;font-size:14px;">
+                    <h1>Overeenkomst Zakelijke Adverteerders</h1>
+                </td>
+            </tr>
+        </table>    
+
+        <table class="dotted_border">
+
+            <apex:outputpanel rendered="{!Opportunity.Billing_Account__c != Opportunity.AccountId}" layout="none">
+                <tr>
+                    <th width="20%">Agency:</th>
+                    <th width="30%">{!Opportunity.Billing_Account__r.Name}</th>
+                    <th width="20%">Adverteerder:</th>
+                    <th width="30%">{!Opportunity.Account.Name}</th>
+                </tr>
+            </apex:outputpanel>
+
+            <apex:outputpanel rendered="{!Opportunity.Billing_Account__c == Opportunity.AccountId}" layout="none">
+                <tr>
+	                <td width="20%">Adverteerder:</td>
+	                <td colspan="3" width="80%">{!Opportunity.Account.Name}</td>
+                </tr>
+            </apex:outputpanel>
+
+            <tr>
+                <td>Telefoonnummer:</td>
+                <td>{!Opportunity.Billing_Account__r.Phone}</td>
+                <td>IBAN:</td>
+                <td>{!Opportunity.Billing_Account__r.Bank_AccountNumber__c}</td>
+            </tr>
+
+            <tr>
+                <td>Contact persoon:</td>
+                <td>{!Opportunity.Primary_Contact__r.FirstName} {!Opportunity.Primary_Contact__r.LastName}</td>
+                <td>Bank Naam:</td>
+                <td>{!Opportunity.Billing_Account__r.Bank_Name__c}</td>
+            </tr>
+            <tr>
+                <td>Telefoonnummer:</td>
+                <td>{!Opportunity.Primary_Contact__r.Phone}</td>
+                <td>Contractnummer:</td>
+                <td>{!Opportunity.IOnumber__c}</td>
+            </tr>
+            <tr>
+                <td>Emailadres:</td>
+                <td>{!Opportunity.Primary_Contact__r.Email}</td>
+                <td>ID 2dehands.be/2ememain.be:</td>
+                <td>{!Opportunity.Billing_Account__r.ExternalSubscriptionId__c}</td>
+            </tr>
+            <tr>
+                <td>Adres:</td>
+                <td>{!Opportunity.Billing_Account__r.BillingStreet}
+                    <br/>{!Opportunity.Billing_Account__r.BillingCity} {!Opportunity.Billing_Account__r.BillingPostalcode}
+                    <br/> {!Opportunity.Billing_Account__r.BillingCountry}</td>
+                <td>Uw kenmerk:</td>
+                <td>{!Opportunity.P_O_Number__c}</td>
+            </tr>
+        </table>
+        <br/>
+        <hr/>
+        <br/>
+        <table class="solid_border">
+            <tr>
+                <th width="35%" class="top ">Product</th>
+                <th width="15%" class="top ">Periode</th>
+                <th width="5%" class="top">Limiet</th>
+                <th width="15%" class="top left">
+                    <apex:outputPanel layout="inline">
+                        Tarief per maand
+                    </apex:outputPanel>
+                </th>
+                <th width="15%" class="top" style="text-align: center;">
+                    <apex:outputPanel layout="inline">
+                        Korting
+                    </apex:outputPanel>
+                </th>
+                <th width="15%" class="top right">
+                    <apex:outputPanel layout="inline">
+                        Totaal inclusief korting
+                    </apex:outputPanel>
+                </th>
+            </tr>
+            
+            <apex:repeat var="oli" value="{!sortrecord}">
+                <tr>
+                    <td class="bottom left">{!oli.DefaultLineDescription__c}</td>
+                    <td class="bottom">{!day(oli.from_Date__c)}/{!month(oli.from_Date__c)}/{!year(oli.from_Date__c)}
+                        &nbsp;-&nbsp;
+                            {!day(oli.until_Date__c)}/{!month(oli.until_Date__c)}/{!year(oli.until_Date__c)}
+                    </td>
+                    <td class="bottom left">
+                        <apex:outputField value="{!oli.BundleSize__c}"/>
+                    </td>
+                    <td class="bottom left" style="text-align: center;">
+                        <apex:outputPanel layout="inline">
+                            €
+                            <c:LocalNumber my_Number="{! ( oli.TotalAmountGross__c ) }"/>
+                        </apex:outputPanel>
+                    </td>
+                    <td class="bottom" style="text-align: center;">
+                        <apex:outputPanel rendered="{! ( oli.TotalAmountNet__c != oli.TotalAmountGross__c ) }" layout="inline">
+                            €
+                            <c:LocalNumber my_Number="{! oli.TotalAmountNet__c - oli.TotalAmountGross__c }"/>
+                        </apex:outputPanel>
+                    </td>
+                    <td class="bottom right">
+                        €
+                        <c:LocalNumber my_Number="{!oli.SalesPriceNet__c}"/>
+                    </td>
+                </tr>
+            </apex:repeat>
+            
+            <tr style="height:25px;"/>
+            
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" class="top bottom left">Subtotaal</td>
+                <td class="top bottom right">€
+                    <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c}"/>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" class="bottom left">BTW
+                    <c:LocalNumber my_Number="{!Opportunity.Billing_Account__r.VAT__c}"/>
+                    %
+                </td>
+                <td class="bottom right">€
+                    <c:LocalNumber my_Number="{!Opportunity.VatAmount__c}"/>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" class="bottom left">Totaalbedrag Incl. BTW</td>
+                <td class="bottom right">€
+                    <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c+Opportunity.VatAmount__c}"/>
+                </td>
+            </tr>
+        </table>
+        <br/>
+        <br/>
+        <table class="dotted_border">
+            <tr>
+                <th colspan="2">Onze Contactgegevens</th>
+            </tr>
+            <tr>
+                <td>Marktplaats B.V. - Handelend onder de naam <b>2dehands.be/2ememain.be</b></td>
+                <td>Kamer van Koophandel nummer: 28058712</td>
+            </tr>
+            <tr>
+                <td>Wibautstraat 224, 1097 DN Amsterdam, Nederland</td>
+                <td>BTW nummer: NL 803.603.307.B.01</td>
+            </tr>
+            <tr>
+                <td>Telefoon Customer Contact Center:</td>
+                <td>e-mailadres: <b>pro@2dehands.be</b></td>
+            </tr>
+            <tr>
+                <td>0800 67 002 (gratis) of +32 2 558 2992</td>
+                <td></td>
+            </tr>
+        </table>
+        <div style="page-break-before:always;"/>
+        <table class="dotted_border">
+            <tr>
+                <th colspan="2">Onze bankgegevens</th>
+            </tr>
+            <tr>
+                <td>IBAN: NL48BOFA0266577946</td>
+                <td>op naam van Marktplaats B.V</td>
+            </tr>
+        </table>
+
+        <h2 style="border:solid black; text-align:center; padding: 20px;">
+            Vergeet bij een overschrijving niet uw factuurnummer te vermelden!
+        </h2>
+        <table class="dotted_border">
+            <tr>
+                <th colspan="2">Condities &amp; voorwaarden</th>
+            </tr>
+            <tr>
+                <td>Betaling:</td>
+                <td>Het totaalbedrag wordt in maandelijkse termijnen automatisch van uw rekening afgeschreven.</td>
+            </tr>
+            <tr>
+                <td>Facturatie:</td>
+                <td>Wij sparen het milieu. U ontvangt uw factuur enkel elektronisch zoals vermeld in artikel 4.3 van de Algemene voorwaarden.</td>
+            </tr>
+            <tr>
+                <td>Verlenging:</td>
+                <td>Na het verstrekken van de contractperiode wordt het contract automatisch met 1 maand continu
+                    verlengd.
+                </td>
+            </tr>
+            <tr>
+                <td>Gebruik Protool software:</td>
+                <td>U kunt de eventueel in de bundel opgenomen “promoties” enkel plaatsen door middel van de door ons aangeboden Protool software. Handmatige plaatsing van de promoties welke u als onderdeel van de bundel koopt, of plaatsing op andere wijze dan via de Protool software, is niet mogelijk of toegestaan.
+                    <br/>
+                    Op het gebruik van de Protool software zijn de voorwaarden van de Protool End User License Agreement (<a href="http://www.2dehands.be/doc/protool-eula">Protool EULA</a>) van toepassing. Middels gebruik van de Protool software bevestigt u uw akkoord met de Protool EULA.
+                </td>
+            </tr>
+            <tr>
+                <td>Voorwaarden:</td>
+                <td>De Algemene advertentievoorwaarden voor zakelijke adverteerders zijn altijd van toepassing op deze overeenkomst. <br/>
+                    Indien u middels dit contract een overeenkomst aangaat omtrend “promoties”, gelden tevens: <br/>
+                    <ul style="list-style-type:disc">
+                        <li>Voorwaarden Promoties</li>
+                        <li>Protool EULA</li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+        <h2>Akkoord namens {!Opportunity.Billing_Account__r.Name}</h2>
+        <p>
+            Ik heb de hieronder bepaalde algemene voorwaarden van 2dehands gelezen en begrepen, en ga ermee akkoord.
+        </p>
+        <table class="dotted_border">
+            <tr>
+                <td>Naam:</td>
+                <td class="echosign_container">{{_es_signer_fullname}}</td>
+            </tr>
+            <tr>
+                <td>Functie:</td>
+                <td class="echosign_container"> {{*_es_signer_title}}</td>
+            </tr>
+            <tr>
+                <td>Datum:</td>
+                <td class="echosign_container">{{_es_signer_date}}</td>
+            </tr>
+            <tr>
+                <td>Handtekening</td>
+                <td class="echosign_container">{{_es_signer_signature}}</td>
+            </tr>
+        </table>
+    </div>
+    </body>
+</apex:page>

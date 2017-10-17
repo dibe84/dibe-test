@@ -1,0 +1,4 @@
+<apex:page standardController="Opportunity" extensions="DispatcherOpportunityProducts"
+    action="{!Redir}">
+    <apex:param name="addProductsURL" value="{!URLFOR($Action.OpportunityLineItem.AddProduct)}" assignTo="{!addProductsURL}"/>
+</apex:page>

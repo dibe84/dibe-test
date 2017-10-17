@@ -1,0 +1,165 @@
+<apex:page showHeader="false" sidebar="false">
+    <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+            <style>
+                html *{
+                    box-sizing: border-box;
+                }
+                body{
+                    width: 100%;
+                    margin-left: 0;
+                    margin-right: 0;
+                    padding-right: 15px;
+                    float: left;
+                    overflow-x: hidden;
+                }
+                ul li.publisherFeedItemTypeChoice:last-child{
+                    margin-right: 0;
+                }
+                .publishercontainer ul.publisherFeedItemTypeChoices{
+                    overflow: inherit;
+                }
+                .zen .publisherTypeOverflow.zen-open .zen-trigger{
+                    height: 22px;
+                }
+                .zen-options a.publisherFeedItemTypeChoice{
+                    float: left;
+                    width: 100%;
+                    height: inherit;
+                }
+                .publishercontainer .bottomBar{
+                    height: inherit;
+                    float: left;
+                    width: 100%;
+                }
+                @media (max-width: 480px){
+                    .publishercontainer ul.publisherFeedItemTypeChoices {
+                        overflow: inherit;
+                        float: left;
+                        width: 100%;
+                        height: inherit;
+                    }
+                    .publishercontainer li.publisherFeedItemTypeChoice {
+                        display: inline;
+                        height: inherit;
+                        margin-right: 3px;
+                        float: left;
+                        margin-bottom: 5px;
+                        position: relative;
+                    }
+                    li.publisherFeedItemTypeChoice > a {
+                        float: left;
+                        width: 100%;
+                        height: inherit !important;
+                        font-size: 10px;
+                    }
+                    .publishercontainer .withArrowAttached span.pArrow {
+                        display: inline-block;
+                        top: 4px;
+                        right: 0;
+                        position: relative;
+                        bottom: inherit;
+                        left: inherit;
+                        margin-left: 5px;
+                    }
+                    .publisherWrapper {
+                        position: relative;
+                        float: left;
+                        width: 100%;
+                    }
+                    .publisherBottomBarPlaceholder{
+                        float: left;
+                        width: 100%;
+                    }
+                    .publishercontainer .bottomBar{
+                        height: inherit;
+                        float: left;
+                        width: 100%;
+                    }
+                    .publishercontainer{
+                        line-height: inherit;
+                    }
+                    .zen .publisherTypeOverflow .zen-trigger{
+                        font-size: 9px;
+                        top: 2px;
+                    }
+                    .zen .publisherTypeOverflow.zen-open .zen-trigger{
+                        padding-left: 5px;
+                        position: relative;
+                        z-index: 11;
+                    }
+                    .zen .publisherTypeOverflow.zen-open .zen-options .publisherFeedItemTypeChoice{
+                        font-size: 9px;
+                        padding: 5px;
+                    }
+                    .zen .publisherTypeOverflow.zen-open .zen-options .publisherFeedItemTypeChoice .truncateLabel{
+                        margin-left: 5px;
+                    }
+                    .zen-options a.publisherFeedItemTypeChoice > span{
+                        position: relative;
+                        left: -7px;
+                    }
+                    .zen-options a.publisherFeedItemTypeChoice > span > img{
+                        width: 12px;
+                        height: inherit;
+                        left: 5px !important;
+                        background-size: contain;
+                    }
+                    .zen .publisherTypeOverflow.zen-select{
+                        position: relative;
+                        margin: 0;
+                        left: 5px;
+                        display: inline;
+                        width: inherit;
+                    }
+                    ul li.publisherFeedItemTypeChoice:last-child{
+                        position: absolute;
+                        width: 79px;
+                    }
+                    .zen .publisherTypeOverflow.zen-select .zen-trigger b.zen-selectArrow{
+                        top: -1px;
+                    }
+                    .zen .publisherTypeOverflow .zen-options{
+                        padding-top: 20px;
+                    }
+                    .cxallfeedactions .feeditemActionMenu .zen-options, .feedcommentactions .commentActionMenu .zen-options, .feedmainandrightbar .feedrightbar .zen-options{
+                        left: -87px;
+                    }
+                    ul li.publisherFeedItemTypeChoice:last-child .zen-open{
+                        top: -8px;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <chatter:feed entityId="{!URLENCODE($CurrentPage.parameters.id)}"/>
+            
+            <div id="msgWarning" style="display:none;">
+                <apex:pageMessage summary="There is something wrong with 'Back' browser button. Please use button 'Return to Opportunity'!" severity="warning" strength="3" />
+            </div>
+            
+            <script>
+                setTimeout(function(){
+                    var oppid = "{!URLENCODE($CurrentPage.parameters.id)}";
+                    if(oppid == ""){
+                        document.getElementById("msgWarning").style.display = "block";
+                    }
+                }, 500);
+                if (chatterInt) clearInterval(chatterInt);
+                var chatterInt = setInterval(function(){
+                    console.log("chatter check ", chatter);
+                    if (window.chatter) {
+                        var feed = chatter.getFeed();
+                        var feedConfig = feed.getConfig();
+                        feed.refresh({
+                            feedType : feedConfig.feedType,
+                            isFullRefresh : true,
+                            params : feedConfig
+                        });
+                    }
+                }, 60000);
+            </script>
+        </body>
+    </html>
+</apex:page>

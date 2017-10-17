@@ -1,0 +1,5 @@
+<apex:page standardController="TRACT_Invoice__c" extensions="TRC_DownloadPDFInvoiceController" action="{!navigate2DownloadURL}">
+ <apex:form >
+     <apex:pageMessages id="showmsg"></apex:pageMessages>
+ </apex:form>
+</apex:page>

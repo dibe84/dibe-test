@@ -1,0 +1,126 @@
+<apex:page standardController="echosign_dev1__SIGN_Agreement__c" extensions="PGC_MandateExtension" showHeader="false"
+           applyHtmlTag="false" applyBodyTag="false" renderas="pdf">
+    <head>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_EBAYK.css')}" html-media="print"/>
+    </head>
+    <body>
+
+        <div class="header">
+            <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_EBAYK.jpg')}" title="logo" width="32%" style="float:right"/>
+            <p>eBay Kleinanzeigen GmbH<br/> 
+               Albert-Einstein-Ring 2-6<br/>  
+               14532 Kleinmachnow, Deutschland</p>
+        </div>
+
+        <div class="footer">
+            <table>
+                <tr>
+                    <td>        
+                        <p>eBay Kleinanzeigen GmbH<br/> 
+                           <b>Ust-ID</b>: DE238250605<br/>
+                           <b>Handelsregister-Nr.</b>: HRB 18681 P<br/>
+                           <b>Tax ID Nr</b>: 046/114/04846</p>
+                    </td>
+                    <td class="right">
+                        <div>Seite <span class="pagenumber"/> von <span class="pagecount"/></div>
+                    </td>       
+                </tr>    
+            </table>           
+        </div>
+
+        <div class="content">
+            <h1>SEPA-Lastschriftmandat</h1>
+    
+            <h3>
+                Mandatsreferenz: {!echosign_dev1__SIGN_Agreement__c.Mandate_id__c}
+            </h3>
+            <h3>
+                Gläubiger-ID: {!echosign_dev1__SIGN_Agreement__c.MemberUnit__r.Creditorid__c}
+            </h3>
+    
+            <h3>
+                eBay Kleinanzeigen GmbH
+            </h3>
+            <p>
+                Mit der Unterzeichnung dieses Lastschriftmandats ermächtige ich eBay Kleinanzeigen GmbH, Zahlungen von meinem Konto
+                mittels Lastschrift einzuziehen. Zugleich weise ich mein Kreditinstitut an, die von eBay Kleinanzeigen GmbH auf
+                mein Konto gezogenen Lastschriften einzulösen.
+            </p>
+            <p>
+                Hinweis: Dieses Lastschriftmandat dient nur dem Einzug von Lastschriften, die auf Konten von Unternehmen
+                gezogen sind. Ich bin nicht berechtigt, nach der erfolgten Einlösung eine Erstattung des belasteten Betrages
+                zu verlangen. Ich bin berechtigt, mein Kreditinstitut bis zum Fälligkeitstag anzuweisen, Lastschriften nicht
+                einzulösen.
+            </p>
+            <p>
+                Der Rechnungsbetrag wird automatisch monatlich als wiederkehrende Zahlung von Ihrem Konto abgebucht.
+            </p>
+    
+            <table class="solid_border">
+                <tr>
+                    <th colspan="4">Details des Kontoinhabers</th>
+                </tr>
+                <tr>
+                    <td>Kontoinhaber:</td>
+                    <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Name}</td>
+                    <td>USt-ID Nr:</td>
+                    <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Company_VAT_No__c}</td>
+                </tr>
+                <tr>
+                    <td>Tel:</td>
+                    <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Opportunity__r.Primary_Contact__r.Phone}</td>
+                    <td>IBAN:</td>
+                    <td>{{*BankAccountNumber_es_signer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}}</td>
+                </tr>
+                <tr>
+                    <td>Adresse:</td>
+                    <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingStreet}
+                        <br/>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingCity} {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingPostalcode}
+                        <br/> {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingCountry}</td>
+                </tr>
+            </table>
+            <br/>
+            <table class="solid_border">
+                <tr>
+                    <th colspan="2">Gläubigerdetails</th>
+                </tr>
+                <tr>
+                    <td>Zahlungsempfänger:</td>
+                    <td>eBay Kleinanzeigen GmbH</td>
+                </tr>
+                <tr>
+                    <td>Adresse:</td>
+                    <td>Albert-Einstein-Ring 2-6, 14532 Kleinmachnow, Deutschland</td>
+                </tr>
+                <tr>
+                    <td>IBAN:</td>
+                    <td>DE75501108006161520090</td>
+                </tr>
+            </table>
+            <br/>
+    
+            <div style="page-break-before:always;"/>
+    
+            <h2 style="text-align:left">SEPA-Lastschriftmandat hiermit vom
+                Kontoinhaber {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Name} erteilt:</h2>
+            <table class="dotted_border">
+                <tr>
+                    <td>Name:</td>
+                    <td class="echosign_container">{{_es_signer_fullname}}</td>
+                </tr>
+                <tr>
+                    <td>Datum:</td>
+                    <td class="echosign_container">{{_es_signer_date}}</td>
+                </tr>
+                <tr>
+                    <td>Unterschrift</td>
+                    <td class="echosign_container">{{_es_signer_signature}}</td>
+                </tr>
+            </table>
+
+        </div>
+
+    </body>
+
+</apex:page>

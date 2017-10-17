@@ -1,0 +1,68 @@
+<apex:page controller="DFPManuallyImportDeliveryController" action="{!checkProductListServers}"> 
+    <head>
+        <link href="/sCSS/35.0/sprites/1444933246000/Theme3/default/gc/WaitingPages.css" rel="stylesheet" type="text/css"/>
+        <style>
+            .wpTable {
+                font-size: 1.8em;
+                font-weight: bold;
+                position: fixed;
+                z-index: 99999;
+                left: 35%;
+                top:25%;
+            }
+        </style>
+        
+    </head> 
+    <script src="/soap/ajax/20.0/connection.js"></script>
+	<script src="/soap/ajax/20.0/apex.js"></script>
+    <script>
+		window.onbeforeunload = function (e) {
+		   	e = e || window.event;
+		 	 
+		   	// For IE and Firefox prior to version 4
+		   	if (e) {
+		      	//e.returnValue = '';
+		   	}
+		 
+		   	// DML call
+		   	sforce.sessionId = '{!$Api.Session_ID}';
+			sforce.connection.sessionId=sforce.sessionId;
+		  	var result = sforce.apex.execute("DFPManuallyImportDeliveryController","cancellDDS",{}); 
+		   
+		   	// For Safari
+		   	//return ''; 
+		};
+	</script>
+        
+    <body class="wpFullPage">
+    <apex:form id="frm">
+        <div class="overlayBackground" style="width: 100%; height: 100%; display: {!IF(isError,'none','block')};"></div>
+        <apex:pageMessages />
+        <apex:actionPoller action="{!pollReportRequest}" rerender="frm" interval="5" enabled="{!AND(!isError,keepPollingReportRequest)}"/>
+        <apex:actionPoller action="{!pollReportStatus}" rerender="frm" interval="30" enabled="{!AND(!isError,keepPollingStatus)}"/>
+        
+        <div class="wpContainer fpc" style="display: {!IF(isError,'none','block')};" > 
+			<table class="wpTable" cellpadding="0" cellspacing="0">
+                <tbody>
+                    <tr><td class="wpCellTopLeft"></td><td class="wpCellTopRight"></td></tr>
+                    <tr>
+                        <td class="wpCellMiddleLeft">
+                            <apex:outputText rendered="{!OR(keepPollingReportRequest,keepPollingStatus)}">
+                                <img src="/img/loading32.gif" alt="Processing..." width="32" height="32" title="..."/>
+                            </apex:outputText>
+                        </td>
+                        <td class="wpCellMiddleRight wpText">
+                            <apex:outputText rendered="{!keepPollingReportRequest}">Requesting Report(s) From Server</apex:outputText>
+                            <apex:outputText rendered="{!keepPollingStatus}">Updating Records</apex:outputText>
+                            <apex:outputText rendered="{!NOT(OR(keepPollingReportRequest,keepPollingStatus))}">Process Complete</apex:outputText>
+                        </td>
+                    </tr>
+                    <tr><td class="wpCellBottomLeft"></td><td class="wpCellBottomRight"></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </apex:form>
+    </body>
+    <apex:detail subject="{!parId}" relatedList="true" title="true" showChatter="true"/>
+     
+</apex:page>

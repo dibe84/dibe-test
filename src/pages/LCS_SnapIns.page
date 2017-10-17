@@ -1,0 +1,174 @@
+<apex:page applyHtmlTag="false" cache="false" applyBodyTag="false" setup="false" showHeader="false" standardStylesheets="false" controller="SnapIns_Controller" id="thePage" >
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0"/>
+        <script src="{!URLFOR($Resource.libs, 'jquery/dist/jquery.js')}"></script>
+        <script src="{!URLFOR($Resource.libs, 'common/UniqueId.js')}"></script>
+        <link rel="stylesheet" href="{!$Site.Prefix}/s/livechat.css" />
+    </head>
+    
+    <body>
+    <apex:variable var="siteDomain" value="{!$Site.BaseCustomUrl}"/>
+    <apex:variable var="siteURL" value="{!siteDomain & $Site.Prefix}"/>
+    
+    <apex:form id="theForm">
+        <apex:actionFunction name="getPhoto" action="{!getUserPhoto}" rerender="theForm" oncomplete="setUserAvatar();">
+            <apex:param name="username" value="" assignTo="{!username}"/>
+        </apex:actionFunction>
+      <apex:inputHidden value="{!jsonObj}" id="jsonObj" />
+      <apex:inputHidden value="{!photoUrl}" id="userImage" /> 
+      
+    </apex:form>
+    <script type='text/javascript' src='{!siteDomain}/embeddedservice/1.0/esw.min.js'></script>
+    <script type='text/javascript'>
+     	var isAlReadySet = false;
+        var isAlReadyHide = false;
+        var sitePrefix = '{!sitePrefix}';
+        var isAlreadyChangeText = false;
+        var customSetting = JSON.parse(document.getElementById('thePage:theForm:jsonObj').value);
+        
+        function setExtraPrechatFormDetails(originChannel, keyUUID) {
+        	
+             embedded_svc.settings.extraPrechatFormDetails = [
+                {
+                'label':'{!$ObjectType.Case.Fields.OriginChannel__c.Label}',
+                'value': originChannel, 
+                'transcriptFields': ['Case'], 
+                'displayToAgent': false
+                },
+                {
+                'label':'{!$ObjectType.Case.Fields.KeyToLiveChatTranscript__c.Label}',
+                'value': keyUUID, 
+                'transcriptFields': ['Case'], 
+                'displayToAgent': false
+                },
+                {
+                'label':'{!$ObjectType.Case.Fields.Priority.Label}',
+                'value': 'High', 
+                'transcriptFields': ['Case'], 
+                'displayToAgent': false
+                },
+                {
+                'label':'{!$ObjectType.LiveChatTranscript.Fields.KeyToCase__c.Label}',
+                'value': keyUUID, 
+                'transcriptFields': ['KeyToCase__c'], 
+                'displayToAgent': false
+                },
+                {
+                'label':'{!$ObjectType.Case.Fields.MemberId__c.Label}',
+                'value': customSetting[sitePrefix+'_MemberId'], 
+                'transcriptFields': ['MemberId__c'], 
+                'displayToAgent': false
+                },
+                {
+                'label':'{!$ObjectType.Case.Fields.MemberUnitId__c.Label}',
+                'value': customSetting[sitePrefix+'_MemberUnitId'], 
+                'transcriptFields': ['MemberUnitId__c'], 
+                'displayToAgent': false
+                }
+                
+            ];
+           
+        
+        }
+       
+        var initESW = function(gslbBaseUrl) {
+            var keyUUID = generateUUID();
+            setExtraPrechatFormDetails( customSetting[sitePrefix+'_OriginChannel'], keyUUID);
+            //embedded_svc.settings.avatarImgURL = '{!siteURL}/s/Profile.svg';
+            embedded_svc.settings.prechatBackgroundImgURL = '';
+            embedded_svc.settings.waitingStateBackgroundImgURL = '';
+            embedded_svc.settings.smallCompanyLogoImgURL = '';//'{!siteURL}/s/Profile.svg';
+            embedded_svc.settings.displayHelpButton = true; //Or false
+            embedded_svc.settings.onlineText = customSetting[sitePrefix+'_OnlineTextButton'];
+            embedded_svc.settings.offlineText = customSetting[sitePrefix+'_OffLineTextButton'];
+            embedded_svc.settings.onlineLoadingText = customSetting[sitePrefix+'_StartingText'];
+            embedded_svc.init('{!siteDomain}', customSetting[sitePrefix+'_UrlChat'] , customSetting[sitePrefix+'_UrlContent'] , '{!siteURL}', customSetting[sitePrefix+'_DeploymentId'], customSetting[sitePrefix+'_OrgId'], customSetting[sitePrefix+'_ButtonId'], '1.0', gslbBaseUrl, '39.0', sitePrefix ,  customSetting[sitePrefix+'_ParentId']); }; if (!window.embedded_svc) { var s = document.createElement('script'); s.setAttribute('src', '{!siteDomain}/embeddedservice/1.0/esw.min.js'); s.onload = function() { initESW(null); }; document.body.appendChild(s);} else { initESW('{!siteDomain}'); }
+            
+            function setUserAvatar(){
+                //set username
+                var photoUrl = $("input[id$='userImage']").val();
+                if(photoUrl != ''){
+                    $('head').append('<style> .agentAvatar{background-image: url(' + photoUrl + ');} .agentAvatar.noAvatarSpacer{background:none;}</style>'); 
+                }else{
+                    var username = $("#menuHeaderLabel").text();
+                    if(username != 'Live Chat' && username != '' && username){
+                        getPhoto(username);
+                    }
+                }
+            }
+            
+            $(document).ready(function(){
+                var parentWrapper = $(window.parent.document);
+                parentWrapper.find('.snapInsIframe').css({'max-height':'64px','width':'242px'});
+                setInterval(function(){
+                    if($('.modalContainer').hasClass("maximizedMobile") || $('.modalContainer').hasClass("sidebarMaximized")){
+                        parentWrapper.find('.snapInsIframe').css({'max-height':'498px','width':'341px'});
+                       
+                    }else{
+                        parentWrapper.find('.snapInsIframe').css({'max-height':'64px','width':'242px'});
+                       
+                        if(!isAlReadySet) {
+                            isAlReadySet = true;
+                            //remove old action
+                            $('.agentOnline.uiButton').prop( "onclick", null);
+                            //set new action
+                            $('.agentOnline.uiButton').click(function(){
+								 isAlReadyHide = false;
+                                 var keyUUID = generateUUID();
+                                 setExtraPrechatFormDetails( customSetting[sitePrefix+'_OriginChannel'], keyUUID);
+                                 embedded_svc.initInteraction();
+                                 return false;
+                            });
+                        }
+                    }
+                    var category  = $('.Category__c');
+                    if(category.length && !isAlReadyHide) {
+                        //The depending pick list didn't work correctly on snap ins, so we need to get this value from custom setting.
+                         var  category = customSetting[sitePrefix+'_Category'];
+                         if(category) {
+	                         var setAvailableVal = category.split(',');
+	                         $('.Category__c option').each(function() {
+	                            var optVal = $(this).val();
+	                            if(!(setAvailableVal.indexOf(optVal) > -1)){
+	                                $(this).wrap( '<span class="toggleOption" style="display: none;" />' );
+	                                isAlReadyHide = true;
+	                            }
+	                          });
+	                    }
+                    }
+                   
+                    var waitingGreeting = $('.waitingGreeting');
+                    var defualtText = 'Hello !';
+                    
+                    if(waitingGreeting.length && !isAlreadyChangeText && waitingGreeting.text() == defualtText) {
+                        waitingGreeting.hide();
+                    }
+                    
+                    if(waitingGreeting.length && !isAlreadyChangeText && waitingGreeting.text() != defualtText) {
+                       var str = waitingGreeting.text();
+                       var newText = str.replace("Hello", "Hej");
+                       waitingGreeting.text(newText);
+                       waitingGreeting.show();
+                       isAlreadyChangeText = true;
+                    }
+                   
+                    
+                }, 50);
+                
+                var myint= setInterval(function() {getUsername();}, 3000);
+                
+                function getUsername(){
+                    var username = $("#menuHeaderLabel").text();
+                    
+                    if(username != 'Live Chat' && username != '' && username){
+                        clearInterval(myint);
+                        getPhoto(username);
+                    }
+                }
+            });
+    </script>
+    
+    </body>
+</html>
+</apex:page>

@@ -1,0 +1,12 @@
+<apex:page showHeader="false" sidebar="false" applyBodyTag="false" applyHtmlTag="false" >
+
+    <style>
+        .timeline {
+            width: 100%;
+        }
+    </style>
+
+    <a class="twitter-timeline" href="https://twitter.com/{!$CurrentPage.parameters.username}">by @{!$CurrentPage.parameters.username}</a>
+    <script async="true" src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+</apex:page>

@@ -1,0 +1,62 @@
+<apex:page standardController="Account" 
+	wizard="false" 
+	showQuickActionVfHeader="false" 
+	cache="false" 
+	standardStylesheets="false" 
+	showHeader="false" 
+	setup="false" 
+	showChat="false" 
+	sidebar="false" 
+	applyHtmlTag="false" 
+	applyBodyTag="false"
+	extensions="TRC_RecurringPaymentMethodsController">
+	
+	<html>
+        <head>
+            <style>
+				#loadingFirstLoad{
+					position: fixed;
+					width: 100px;
+					height: 100px;
+					top: 50%;
+					margin-top: -50px;
+					z-index: 10000;
+					left: 0;
+					right: 0;
+					margin-left: auto;
+					margin-right: auto;
+				}
+				#loadingFirstLoad img{
+					width: 100%;
+				}
+				#lightning{
+					overflow-y: auto;
+					margin: 0 auto;
+				}
+			</style>
+            <script src="{!URLFOR($Resource.libs, 'jquery/dist/jquery.js')}"></script>
+        </head>
+        <body>
+            <div id="loadingFirstLoad">
+                <img src="{!URLFOR($Resource.lightning_component, 'assets/images/spinners/slds_spinner_brand.gif')}" alt="Loading Conponent" />
+            </div>
+            <apex:includeLightning />
+        
+            <div id="lightning"></div>
+            
+            <script>
+                $Lightning.use("c:TRC_RecurringPaymentMethodsAPP", function() {
+                    $Lightning.createComponent("c:TRC_RecurringPaymentMethods",
+                    { accid : "{!account.id}", isUserHasEncryptedData : {!isUserHasEncryptedData}},
+                     "lightning", 
+                     function(cmp) {
+                     	$('#loadingFirstLoad').hide();
+                         
+                                
+                           
+                     });
+                });
+            </script>
+        </body>
+    </html>			
+</apex:page>

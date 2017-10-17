@@ -1,0 +1,37 @@
+<apex:page id="thePage" sidebar="false" showHeader="true" standardController="Site_Alert__c" extensions="AddSiteController" >
+<head>
+<script type="text/javascript">
+function reqComplete() {
+    var isRequestError = document.getElementById('thePage:theForm:isRequestError').value;
+   if (isRequestError.toLowerCase() == 'false') {
+        goBack();
+   }
+}
+
+function goBack() {
+    window.location = '/{!curSiteAlert.id}';
+}
+
+</script>
+</head>
+
+<apex:form id="theForm">
+    <apex:inputhidden value="{!isRequestError}" id="isRequestError" />
+    <apex:pageBlock id="thePageBlock" title="All Active Sites" >
+        <apex:pageMessages id="theMessages"/> 
+        <apex:pageBlockButtons >
+            <apex:commandButton value="Cancle" onclick="goBack();return false;"/>
+            <apex:commandButton value="Save"  action="{!saveSiteAlert}" oncomplete="reqComplete();"  reRender="theMessages,isRequestError"/>
+        </apex:pageBlockButtons>
+        <apex:pageBlockSection >
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel >Active Site</apex:outputLabel>
+                <apex:selectList value="{!curSiteAlert.Site__c}" size="1">
+                    <apex:selectOptions value="{!items}" />
+                </apex:selectList>
+            </apex:pageBlockSectionItem>
+        </apex:pageBlockSection>
+    
+    </apex:pageBlock>
+</apex:form>
+</apex:page>

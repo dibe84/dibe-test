@@ -1,0 +1,10 @@
+<apex:page controller="PGC_THBELAU_ExternalSubscriptionManager" action="{!deactivateSubscription}" >
+    <apex:pageMessages />
+    <apex:form >
+        <apex:pageBlock >
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Cancel" action="{!cancel}"/> 
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

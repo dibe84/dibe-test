@@ -1,0 +1,120 @@
+<apex:page standardController="echosign_dev1__SIGN_Agreement__c" extensions="PGC_MandateExtension" showHeader="false"
+           applyHtmlTag="false" applyBodyTag="false" renderas="pdf">
+    <head>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_THBEL.css')}" html-media="print"/>
+        
+        <style type="text/css">
+            .mandateHeader_tr { margin: 10px; }
+            .mandateHeader_td { font-type:Arial;text-align:center; }
+        </style>
+        
+    </head>
+    <body>
+    <div class="header">
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_THBELAU_FR.jpg')}" title="logo" width="34%" style="float:left"/>
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_THBELAU_NL.jpg')}" title="logo" width="32%" style="float:right"/>
+    </div>
+    <div class="footer">
+
+        <div>Page <span class="pagenumber"/> sur <span class="pagecount"/></div>
+
+    </div>
+    <div class="content">
+    
+        <table>
+            <tr class="mandateHeader_tr">
+                <td class="mandateHeader_td" style="font-size:22px;">
+                    Mandat de domiciliation européenne SEPA - Core
+                </td>
+            </tr>
+            <tr class="mandateHeader_tr">    
+                <td class="mandateHeader_td" style="font-size:16px;">
+                    Domiciliation automatique
+                </td>
+            </tr>
+            <tr class="mandateHeader_tr">    
+                <td class="mandateHeader_td" style="font-size:13px;">
+                    Référence du mandat:  {!echosign_dev1__SIGN_Agreement__c.Mandate_id__c}
+                </td>
+            </tr>
+            <tr class="mandateHeader_tr">    
+                <td class="mandateHeader_td" style="font-size:13px;">
+                    Identification du créancier:  {!echosign_dev1__SIGN_Agreement__c.MemberUnit__r.Creditorid__c}
+                </td>                                                
+            </tr>
+        </table> 
+            
+        <p>
+            En signant ce formulaire de mandat, vous autorisez ::
+        <ul>
+            <li>Marktplaats B.V. commercialisée sous le nom 2dehands.be / 2ememain.be à envoyer des instructions à votre
+                banque pour débiter votre compte, et
+            </li>
+            <li>votre banque à débiter votre compte conformément aux instructions de Marktplaats B.V. relatives au Contrat numéro <b>{!opportunity.IOnumber__c}</b></li>
+        </ul>
+        Le montant applicable sera automatiquement débité de votre compte le 20 de chaque mois. Vous acceptez que cette
+        déclaration ait valeur de pré-notification.
+        </p>
+        <p style="font-size: 10px;">
+            En principe, vous pouvez demander à votre banque de vous rembourser une domiciliation. Vous devez soumettre
+            votre réclamation, en principe, dans les 8 semaines suivant la date à laquelle le montant a été débité de
+            votre compte. Adressez-vous à votre banque pour en savoir plus sur les conditions applicables à votre
+            entreprise.
+        </p>
+        <table class="dotted_border">
+            <tr>
+                <th colspan="4">Données du titulaire du compte</th>
+            </tr>
+            <tr>
+                <td>Nom de la société:</td>
+                <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Name}</td>
+                <td>Numéro TVA (siège social):</td>
+                <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Company_VAT_No__c}</td>
+            </tr>
+            <tr>
+                <td>Numéro de téléphone:</td>
+                <td>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Phone}</td>
+                <td>IBAN:</td>
+                <td>{{*BankAccountNumber_es_signer&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}}</td>
+            </tr>
+            <tr>
+                <td>Adresse:</td>
+                <td colspan="3">{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingStreet}
+                    <br/>{!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingCity} {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingPostalcode}
+                    <br/> {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.BillingCountry}</td>
+            </tr>
+        </table>
+        <br/>
+        <table class="dotted_border">
+            <tr>
+                <th colspan="2">Nos coordonnées</th>
+            </tr>
+            <tr>
+                <td>Marktplaats B.V. - Commercialisée sous le nom 2dehands.be/2ememain.be</td>
+                <td>IBAN: NL48BOFA0266577946</td>
+            </tr>
+            <tr>
+                <td colspan="2">Wibautstraat 224, 1097 DN Amsterdam, Nederland</td>
+            </tr>
+        </table>
+        <div style="page-break-before:always;"/>
+        <h2 style="text-align:left">Accord au nom du titulaire du
+            compte {!echosign_dev1__SIGN_Agreement__c.echosign_dev1__Account__r.Name}</h2>
+        <table class="dotted_border">
+            <tr>
+                <td>Nom:</td>
+                <td class="echosign_container">{{_es_signer_fullname}}</td>
+            </tr>
+            <tr>
+                <td>Lieu et date:</td>
+                <td class="echosign_container">{{_es_signer_date}}</td>
+            </tr>
+            <tr>
+                <td>Signature:</td>
+                <td class="echosign_container">{{_es_signer_signature}}</td>
+            </tr>
+        </table>
+    </div>
+    </body>
+</apex:page>

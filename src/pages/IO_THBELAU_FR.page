@@ -1,0 +1,255 @@
+<apex:page standardController="Opportunity" extensions="AdSalesIOExtension" showHeader="false" applyHtmlTag="false"
+           applyBodyTag="false" renderas="pdf">
+    <head>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_THBEL.css')}" html-media="print"/>
+    </head>
+    <body>
+    <div class="header">
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_THBELAU_FR.jpg')}" title="logo" width="34%" style="float:left"/>
+        <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_THBELAU_NL.jpg')}" title="logo" width="32%" style="float:right"/>
+    </div>
+    <div class="footer">
+
+        <div>Pagina <span class="pagenumber"/> van <span class="pagecount"/></div>
+
+    </div>
+    <div class="content">
+
+        <table>
+            <tr>
+                <td style="font-type:Arial;text-align:center;font-size:14px;">
+                    <h1>Contrat – Annonceurs Professionnels</h1>
+                </td>
+            </tr>
+        </table>    
+
+        <table class="dotted_border">
+
+            <apex:outputpanel rendered="{!Opportunity.Billing_Account__c != Opportunity.AccountId}" layout="none">
+                <tr>
+                    <th width="20%">Agence:</th>
+                    <th width="30%">{!Opportunity.Billing_Account__r.Name}</th>
+                    <th width="20%">Société:</th>
+                    <th width="30%">{!Opportunity.Account.Name}</th>
+                </tr>
+            </apex:outputpanel>
+
+            <apex:outputpanel rendered="{!Opportunity.Billing_Account__c == Opportunity.AccountId}" layout="none">
+                <tr>
+	                <td width="20%">Société:</td>
+	                <td colspan="3" width="80%">{!Opportunity.Account.Name}</td>
+                </tr>
+            </apex:outputpanel>
+
+            <tr>
+                <td>Numéro de téléphone:</td>
+                <td>{!Opportunity.Billing_Account__r.Phone}</td>
+                <td>IBAN:</td>
+                <td>{!Opportunity.Billing_Account__r.Bank_AccountNumber__c}</td>
+            </tr>
+
+            <tr>
+                <td>Personne de contact:</td>
+                <td>{!Opportunity.Primary_Contact__r.FirstName} {!Opportunity.Primary_Contact__r.LastName}</td>
+                <td>Nom de la banque:</td>
+                <td>{!Opportunity.Billing_Account__r.Bank_Name__c}</td>
+            </tr>
+            <tr>
+                <td>Numéro de téléphone:</td>
+                <td>{!Opportunity.Primary_Contact__r.Phone}</td>
+                <td>Numéro de contrat:</td>
+                <td>{!Opportunity.IOnumber__c}</td>
+            </tr>
+            <tr>
+                <td>Adresse e-mail:</td>
+                <td>{!Opportunity.Primary_Contact__r.Email}</td>
+                <td>ID 2dehands.be/2ememain.be:</td>
+                <td>{!Opportunity.Billing_Account__r.ExternalSubscriptionId__c}</td>
+            </tr>
+            <tr>
+                <td>Adresse:</td>
+                <td>{!Opportunity.Billing_Account__r.BillingStreet}
+                    <br/>{!Opportunity.Billing_Account__r.BillingCity} {!Opportunity.Billing_Account__r.BillingPostalcode}
+                    <br/> {!Opportunity.Billing_Account__r.BillingCountry}</td>
+            </tr>
+            <tr>
+                <td>Numéro TVA (siège social):</td>
+                <td>{!Opportunity.Billing_Account__r.Company_VAT_No__c}</td>                
+                <td>Votre référence:</td>
+                <td>{!Opportunity.P_O_Number__c}</td>
+            </tr>
+        </table>
+        <br/>
+        <hr/>
+        <br/>
+        <table class="solid_border">
+            <tr>
+                <th width="35%" class="top">Produit</th>
+                <th width="15%" class="top">Période</th>
+                <th width="5%" class="top">Nombre Limite</th>
+                <th width="15%" class="top left">
+                    <apex:outputPanel layout="inline">
+                        Tarif Mensuel
+                    </apex:outputPanel>
+                </th>
+                <th width="15%" class="top" style="text-align: center;">
+                    <apex:outputPanel layout="inline">
+                        Remise
+                    </apex:outputPanel>
+                </th>
+                <th width="15%" class="top right">
+                    <apex:outputPanel layout="inline">
+                        Total
+                    </apex:outputPanel>
+                </th>
+            </tr>
+            
+            <apex:repeat var="oli" value="{!sortrecord}">
+                <tr>
+                    <td class="bottom left">{!oli.DefaultLineDescription__c}</td>
+                    <td class="bottom">{!day(oli.from_Date__c)}/{!month(oli.from_Date__c)}/{!year(oli.from_Date__c)}
+                        &nbsp;-&nbsp;
+                            {!day(oli.until_Date__c)}/{!month(oli.until_Date__c)}/{!year(oli.until_Date__c)}
+                    </td>
+                    <td class="bottom left">
+                        <apex:outputField value="{!oli.BundleSize__c}"/>
+                    </td>
+                    <td class="bottom left" style="text-align: center;">
+                        <apex:outputPanel layout="inline">
+                            €
+                            <c:LocalNumber my_Number="{! ( oli.TotalAmountGross__c ) }"/>
+                        </apex:outputPanel>
+                    </td>
+                    <td class="bottom" style="text-align: center;">
+                        <apex:outputPanel rendered="{! ( oli.TotalAmountNet__c != oli.TotalAmountGross__c ) }" layout="inline">
+                            €
+                            <c:LocalNumber my_Number="{! oli.TotalAmountNet__c - oli.TotalAmountGross__c }"/>
+                        </apex:outputPanel>
+                    </td>
+                    <td class="bottom right">
+                        €
+                        <c:LocalNumber my_Number="{!oli.SalesPriceNet__c}"/>
+                    </td>
+                </tr>
+            </apex:repeat>
+            
+            <tr style="height:25px;"/>
+            
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" class="top bottom left">Sous-total</td>
+                <td class="top bottom right">€
+                    <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c}"/>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" class="bottom left">TVA
+                    <c:LocalNumber my_Number="{!Opportunity.Billing_Account__r.VAT__c}"/>
+                    %
+                </td>
+                <td class="bottom right">€
+                    <c:LocalNumber my_Number="{!Opportunity.VatAmount__c}"/>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2" class="bottom left">Total TVAc</td>
+                <td class="bottom right">€
+                    <c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c+Opportunity.VatAmount__c}"/>
+                </td>
+            </tr>
+        </table>
+        <br/>
+        <br/>
+        <table class="dotted_border">
+            <tr>
+                <th colspan="2">Nos coordonnées</th>
+            </tr>
+            <tr>
+                <td>Marktplaats B.V. - Commercialisée sous le <b>2dehands.be/2ememain.be</b></td>
+                <td>Numéro Chambre de Commerce: 28058712</td>
+            </tr>
+            <tr>
+                <td>Wibautstraat 224, 1097 DN Amsterdam, Nederland</td>
+                <td>Numéro TVA: NL 803.603.307.B.01</td>
+            </tr>
+            <tr>
+                <td>Téléphone Centre de Contact Client:<b>0800 67 002 (gratis) ou +32 2 558 2992</b></td>
+                <td>e-mailadres: <b>pro@2ememain.be</b></td>
+            </tr>
+        </table>
+        <div style="page-break-before:always;"/>
+        <table class="dotted_border">
+            <tr>
+                <th colspan="2">Nos coordonnées bancaires</th>
+            </tr>
+            <tr>
+                <td>IBAN: NL48BOFA0266577946</td>
+                <td>au nom de Marktplaats B.V.</td>
+            </tr>
+        </table>
+
+        <h2 style="border:solid black; text-align:center; padding: 20px;">
+            N’oubliez pas de mettre votre numéro de facture en communication de votre virement! 
+        </h2>
+        <table class="dotted_border">
+            <tr>
+                <th colspan="2">Conditions générales</th>
+            </tr>
+            <tr>
+                <td>Paiement:</td>
+                <td>Le montant total est prélevé mensuellement et automatiquement de votre compte.</td>
+            </tr>
+            <tr>
+                <td>Facturation:</td>
+                <td>Nous sommes respectueux de l’environnement. Vous recevez uniquement une facture électronique comme mentionné dans l’article 4.3 des conditions générales.</td>
+            </tr>
+            <tr>
+                <td>Prolongation:</td>
+                <td>Après l’échéance du contrat, celui-ci est tacitement renouvelé pour des périodes successives de 1 mois.</td>
+            </tr>
+            <tr>
+                <td>Utilisation promotions et logiciel Protool:</td>
+                <td>Vous pouvez placer les promotions reprises dans les packs uniquement via le logiciel Protool que nous offrons. Il n'est pas possible ni autorisé de placer ces promotions manuellement ou autrement que via l'utilisation du logiciel Protool. <br/>
+                Les conditions d'utilisation du logiciel Protool (Protool EULA)  sont applicables. Par l'utilisation du logiciel Protool, vous confirmez votre accord avec le Protool EULA.
+                </td>
+            </tr>
+            <tr>
+                <td>Conditions:</td>
+                <td>Les conditions suivantes sont d'applications pour ce contrat: <br/>
+                    - Conditions générales d'annonce pour annonceurs professionnels <br/>
+                    - Conditions des promotions <br/>
+                    - Protool EULA <br/>
+                </td>
+            </tr>
+        </table>
+        <h2>Accord au nom de l’annonceur {!Opportunity.Billing_Account__r.Name}</h2>
+        <table class="dotted_border">
+            <tr>
+                <td>Nom:</td>
+                <td class="echosign_container">{{_es_signer_fullname}}</td>
+            </tr>
+            <tr>
+                <td>Fonction:</td>
+                <td class="echosign_container"> {{*_es_signer_title}}</td>
+            </tr>
+            <tr>
+                <td>Lieu et Date:</td>
+                <td class="echosign_container">{{_es_signer_date}}</td>
+            </tr>
+            <tr>
+                <td>Signature</td>
+                <td class="echosign_container">{{_es_signer_signature}}</td>
+            </tr>
+        </table>
+    </div>
+    </body>
+</apex:page>

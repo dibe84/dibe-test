@@ -1,0 +1,72 @@
+<!-- Manually fix data in the past with starting URL "/apex/PG_DFPImportByDateRange" -->
+<apex:page controller="PGC_DFPImportByDateRange" showHeader="true" sidebar="false" title="DFP Delivery Import With Date Range" doctype="html-5.0" >
+     
+    <apex:form > 
+        <apex:pageBlock mode="edit">
+            <apex:pageMessages />
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton action="{!doSchImport}" value="Import"/>
+            </apex:pageBlockButtons>
+            
+            <apex:pageBlockSection title="Delivery  Import With Options" columns="2">
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Import Type" for="importType"/>
+                    <apex:selectList id="importType" value="{!importType}" multiselect="false" size="1">
+                        <apex:selectOptions value="{!importTypeOptions}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Start Date" for="startDate"/>
+                    <apex:input value="{!startDate}" type="date" required="true" id="startDate"/>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="SObject Type" for="sObjectType"/>
+                    <apex:selectRadio id="sObjectType" value="{!sObjectType}" layout="pageDirection">
+                        <apex:selectOptions value="{!sObjectTypeOptions}"/>
+                    </apex:selectRadio>
+                </apex:pageBlockSectionItem>
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="End Date" for="endDate"/>
+                    <apex:input value="{!endDate}" type="date" required="true" id="endDate"/> 
+                </apex:pageBlockSectionItem>
+                
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        
+        <apex:pageBlock mode="edit">
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton action="{!doTractServiceImport}" value="1.Import Service"/>
+                <apex:commandButton action="{!doTractInvoicesImport}" value="2.Import Invoices"/>
+                <apex:commandButton action="{!doTractInvoiceItemsImport}" value="3.Import Invoice Items"/>
+                <apex:commandButton action="{!doTractRevenueForecastImport}" value="4.Import Revenue Forecast"/>
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection title="Tract Import" columns="1">
+                <p>
+                Please execute in order provided, one after another finished ("IsRunning field" is changed from "checked" to "unchecked")
+                </p>
+                <p>
+                Job status can be monitored in the bellow links.
+                </p>
+                <ol>
+                    <li> 
+                        <a target='_blank' href="{!ServiceConfig}">Import Service Check</a>
+                    </li>
+                    <li> 
+                        <a target='_blank' href="{!InvoiceConfig}">Import Invoices Check</a>
+                    </li>
+                    <li> 
+                        <a target='_blank' href="{!InvoiceItemConfig}">Import Invoice Items Check</a>
+                    </li>
+                    <li> 
+                        <a target='_blank' href="{!RevenueForecastConfig}">Import Revenue Forecast Check</a>
+                    </li>
+                </ol>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+
+</apex:page>

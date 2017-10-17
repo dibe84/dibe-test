@@ -1,0 +1,118 @@
+<apex:page standardcontroller="Rev__c" extensions="PGC_Subscription">
+    <apex:pagemessages id="errors" />
+    <apex:form >
+        <!-- TOP OVERVIEW /-->
+        <apex:pageblock title="Subscription Details">
+            <apex:pageblocksection columns="1">
+                <apex:pageblocksectionitem >
+                    <apex:outputlabel for="oppLink" value="Opportunity" />
+                    <apex:outputlink id="oppLink" value="/{!opp.Id}">{!opp.Name}</apex:outputlink>
+                </apex:pageblocksectionitem>
+                <apex:outputfield value="{!opp.Pricebook2Id}" />
+                <apex:outputfield value="{!mainSubscription.revItems[0].Product__c}" /> <!-- shouldnt it be removed as we can have multiple products per subscription-->
+                <apex:outputfield value="{!master.TerminationDate__c}" />
+                <apex:outputfield value="{!master.TerminationReason__c}" />
+                <apex:outputfield value="{!master.CommittedEndDate__c}" />
+                <apex:outputfield value="{!master.initialEndDate__c}" />
+                <apex:outputfield value="{!master.LastBilledDate__c}" />
+                <apex:outputfield value="{!master.ContractDiscount__c}" />
+            </apex:pageblocksection>
+        </apex:pageblock>
+        <!-- TOP OVERVIEW END /-->
+        <!-- REVENUE TIMELINE /-->
+        <apex:outputpanel id="timeline">
+            <apex:pageblock title="Subscription Timeline">
+                <apex:actionstatus id="processing">
+                    <apex:facet name="stop">
+                        <apex:pageblocktable value="{!mainSubscription.revItems}" var="item">
+                            <apex:column >
+                                <apex:commandlink action="{!editAdjustment}" rendered="{!!item.BillingPending__c}" status="processing" rerender="errors, adjModContainer, timeline">
+                                    Edit
+                                    <apex:param value="{!item.Id}" name="idToEdit" assignto="{!chosenRevId}" />
+                                </apex:commandlink>
+                                <apex:outputtext rendered="{!!item.BillingPending__c && item.Id != master.id}" value=" | " />
+                                <apex:commandlink action="{!deleteAdjustment}" onclick="if(!confirm('Are you sure?')){return};" rendered="{!!item.BillingPending__c && item.Id != master.id}" status="processing" rerender="errors, timeline">
+                                    Del
+                                    <apex:param value="{!item.Id}" name="idToDel" assignto="{!chosenRevId}" />
+                                </apex:commandlink>
+                            </apex:column>
+                              
+                            <apex:column headerValue="Pricebook" value="{!item.Pricebook__c}" rendered="{!IF(item.Pricebook__c == item.adj_Pricebook__c || item.adj_Pricebook__c == null,TRUE,FALSE)}" />
+                            <apex:column headervalue="Pricebook" value="{!item.adj_Pricebook__c}" rendered="{!IF(item.Pricebook__c != item.adj_Pricebook__c && item.adj_Pricebook__c != null,TRUE,FALSE)}" style="font-weight:bold;" />
+
+                            <apex:column headervalue="Product" value="{!item.Product__c}" rendered="{!IF(item.Product__c == item.adj_Product__c || item.adj_Product__c == null,TRUE,FALSE)}" />
+                            <apex:column headervalue="Product" value="{!item.adj_Product__c}" rendered="{!IF(item.Product__c != item.adj_Product__c && item.adj_Product__c != null,TRUE,FALSE)}" style="font-weight:bold;" />
+
+                            <apex:column value="{!item.Description__c}" />
+
+                            <apex:column value="{!item.From_Date__c}" />
+                            <apex:column value="{!item.Until_Date__c}" />
+
+                            <apex:column headervalue="Bundle Size" value="{!item.BundleSize__c}" rendered="{!IF(item.adj_BundleSize__c == null,TRUE,FALSE)}" />
+                            <apex:column headervalue="Bundle Size" value="{!item.adj_BundleSize__c}" rendered="{!IF(item.adj_BundleSize__c != null,TRUE,FALSE)}" style="font-weight:bold;" />
+
+                            <apex:column value="{!item.ListPrice__c}" />
+                            <apex:column value="{!item.UnitPrice__c}" style="{!IF(item.UnitPrice__c != item.ListPrice__c,'font-weight:bold;','')}"/>
+                            <apex:column value="{!item.Status__c}" />
+                            <apex:column value="{!item.DoNotInvoice__c}" />
+                        </apex:pageblocktable>
+                    </apex:facet>
+                    <apex:facet name="start">
+                        <apex:outputpanel >
+                            Processing...&nbsp;<apex:image value="/img/loading32.gif" style="height: 15px;" />
+                        </apex:outputpanel>
+                    </apex:facet>
+                </apex:actionstatus>
+                <apex:pageblockbuttons location="top">
+                    <apex:commandbutton value="New Adjustment" action="{!newAdjustment}" disabled="{!mainSubscription.isAdjustable}" status="processing" rerender="adjModContainer,saveButtons" />
+                    <apex:commandbutton value="Cancel" action="{!cancel}" />
+                </apex:pageblockbuttons>
+            </apex:pageblock>
+        </apex:outputpanel>
+        <!-- REVENUE TIMELINE END /-->
+        <!-- PRICE CALCULATION OUTPUT /-->
+        <apex:outputpanel id="adjModContainer">
+            <apex:pageblock mode="edit" id="adjMod" title="{!IF(currentMode == 'New','New ','Edit ')} Adjustment" rendered="{!IF(currentMode != '',TRUE,FALSE)}">
+                <apex:pageblocksection columns="1">
+                    <apex:actionstatus id="calculationInProgress">
+                        <apex:facet name="stop">
+                            <apex:pageblocksection columns="1">
+                                <apex:inputfield value="{!currentRevenue.From_Date__c}" rendered="{!IF(currentMode == 'New',TRUE,FALSE)}">
+                                    <apex:actionsupport event="onchange" action="{!calculate}" rerender="adjMod, errors" status="calculationInProgress" />
+                                </apex:inputfield>
+                                <apex:outputfield value="{!currentRevenue.Pricebook__c}"></apex:outputfield>
+                                <apex:outputfield value="{!currentRevenue.Product__c}"></apex:outputfield> <!-- MAKE EDITABLE -->
+                                <apex:inputfield value="{!currentRevenue.adj_BundleSize__c}" rendered="{!master.BundleSize__c != NULL}">
+                                    <apex:actionsupport event="onchange" action="{!calculate}" rerender="adjMod, errors" status="calculationInProgress" />
+                                </apex:inputfield>
+                                <apex:outputfield value="{!currentRevenue.From_Date__c}" rendered="{!IF(currentMode == 'Edit',TRUE,FALSE)}" />
+                                <apex:outputfield value="{!currentRevenue.ListPrice__c}" />
+                                <apex:outputfield value="{!currentRevenue.CustomListPrice__c}" />
+                                <apex:inputfield value="{!currentRevenue.UnitPrice__c}"/>
+                            </apex:pageblocksection>
+                        </apex:facet>
+                        <apex:facet name="start">
+                            <apex:outputpanel >
+                                Calculating Pricing...&nbsp;<apex:image value="/img/loading32.gif" style="height: 15px;" />
+                            </apex:outputpanel>
+                        </apex:facet>
+                    </apex:actionstatus>
+                </apex:pageblocksection>
+                <apex:pageblockbuttons location="bottom" id="saveButtons">
+                    <apex:actionstatus id="savestatus">
+                        <apex:facet name="stop">
+                            <apex:commandbutton value="Save adjustment" action="{!saveAdjustment}" rerender="errors,timeline,adjModContainer" status="savestatus" />
+                        </apex:facet>
+                        <apex:facet name="start">
+                            <apex:outputpanel >
+                                <apex:image value="/img/loading32.gif" style="height: 15px;" />
+                                <apex:commandbutton value="Processing..." disabled="true" />
+                            </apex:outputpanel>
+                        </apex:facet>
+                    </apex:actionstatus>
+                </apex:pageblockbuttons>
+            </apex:pageblock>
+        </apex:outputpanel>
+        <!-- PRICE CALCULATION OUTPUT END /-->
+    </apex:form>
+</apex:page>

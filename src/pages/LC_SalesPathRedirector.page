@@ -1,0 +1,92 @@
+<apex:page standardController="Opportunity" 
+            wizard="false" 
+            showQuickActionVfHeader="false" 
+            cache="false" 
+            standardStylesheets="false" 
+            showHeader="false" 
+            setup="false" 
+            showChat="false" 
+            sidebar="false" 
+            applyHtmlTag="false" 
+            applyBodyTag="false">
+       
+    <html>
+        <head>
+            <style>
+                #loadingFirstLoad{
+                    position: fixed;
+                    width: 100px;
+                    height: 100px;
+                    top: 50%;
+                    margin-top: -50px;
+                    z-index: 10000;
+                    left: 0;
+                    right: 0;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                #loadingFirstLoad img{
+                    width: 100%;
+                }
+                #lightning{
+                    overflow-y: inherit;
+                    margin: 0 auto;
+                }
+            </style>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+            <script src="{!URLFOR($Resource.libs2, 'js/jquery-3.2.1.min.js')}" ></script>
+            <script src="{!URLFOR($Resource.libs2, 'js/jquery-ui-1-12-1.min.js')}" ></script>
+             
+        </head>
+        <body>
+            <div id="loadingFirstLoad">
+                <img src="{!URLFOR($Resource.lightning_component, 'assets/images/spinners/slds_spinner_brand.gif')}" alt="Loading Conponent" />
+            </div>
+            <apex:includeLightning />
+            <div id="lightning"></div>
+        </body>
+    </html>
+    
+            <script>  
+            $(document).ready(function(){
+				//check account status before redirect to salespath
+            	var accStatus = '{!Opportunity.Account.Account_Status__c}';
+            	var msg = 'Cannot create bookings for account with status ' + accStatus;
+            	
+            	if(accStatus != '' && accStatus.indexOf('Active') < 0 && accStatus.indexOf('Pending') < 0){
+            		$('head').prepend('<link rel="stylesheet" href="/resource/lightning_component/assets/styles/salesforce-lightning-design-system.min.css" type="text/css" />');
+            		$('body').delegate('div[role="alertdialog"] :button','click',function(){
+						window.location = '/{!opportunity.id}';
+					});
+					
+            		var htmlbody = '<div role="alertdialog" tabindex="-1" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" class="slds-modal slds-fade-in-open slds-modal--prompt">' + 
+					'<div class="slds-modal__container">' + 
+					'<div class="slds-modal__header slds-theme--error slds-theme--alert-texture">' + 
+					'<h2 class="slds-text-heading--medium" id="prompt-heading-id">' + 'Error Creating Billing Account Tract' +'</h2>' + 
+					'</div>' + 
+					'<div class="slds-modal__content slds-p-around--medium slds-text-align--center">'+ 
+					'<p>' + msg + '</p>' +
+					'</div>' + 
+					'<div class="slds-modal__footer slds-theme--default">'+ 
+					'<button class="slds-button slds-button--neutral">Okay</button>' + 
+					'</div>'+ 
+					'</div>'+ 
+					'</div>'+ 
+					'<div class="slds-backdrop slds-backdrop--open"></div>';
+					$('body').append(htmlbody);
+					document.getElementById('loadingFirstLoad').style.display = 'none';
+            		return;
+            	}
+				
+                $Lightning.use("c:LC_ShoppingCartApp", function() {
+                  $Lightning.createComponent("c:LC_ShoppingCartMainWindow",
+                  { oppId : "{!opportunity.id}",accId:'{!$CurrentPage.parameters.accId}', authToken : "{!$Api.Session_ID}",isEnableMemberUnit:{!$ObjectType.Opportunity.fields.MemberUnit__c.updateable}},
+                  "lightning",
+                  function(cmp) {
+                    // do some stuff
+                    document.getElementById('loadingFirstLoad').style.display = 'none';
+                  });
+                });
+            });
+            </script>
+</apex:page>

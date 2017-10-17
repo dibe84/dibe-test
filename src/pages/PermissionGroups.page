@@ -1,0 +1,152 @@
+<apex:page showHeader="true" sidebar="true" controller="PGC_PermissionGroups">
+	<style type="text/css">
+		li.ps > a {
+			color: blue;
+			text-decoration: none;
+		}
+		li.pg > a {
+			color: green;
+			text-decoration: none;
+			font-weight: bold;
+		}
+
+		li.profile > a {
+			color: red;
+			text-decoration: none;
+			font-weight: bold;
+		}
+
+		li.user > a {
+			color: purple;
+			text-decoration: none;
+		}
+
+		li.ps a:hover, li.pg a:hover {
+			text-decoration: underline;
+		}
+
+		ul li, ol li {
+			margin-left: 0px;
+		}
+	</style>
+	<apex:form >
+		<apex:pageMessages id="messages" escape="false"/>
+		<apex:pageBlock title="Status" id="status">
+			<apex:outputText rendered="{!!calcResult.changesPending}">No changes to apply</apex:outputText>
+			<apex:outputText rendered="{!calcResult.changesPending}">There are changes to apply</apex:outputText>
+			<apex:outputText rendered="{!calcResult.changesPending}">
+				<apex:pageBlockTable value="{!actionList}" var="action" id="theTable" rowClasses="odd,even" styleClass="tableClass">
+					<apex:column >
+						<apex:facet name="header">User</apex:facet>
+						<apex:outputText value="{!action.user.Name} / {!action.user.Username}"/>
+					</apex:column>
+					<apex:column >
+						<apex:facet name="header">Profile</apex:facet>
+						<apex:outputText value="{!profileMap[action.user.ProfileId].Name}"/>
+					</apex:column>
+					<apex:column >
+						<apex:facet name="header">Role</apex:facet>
+                        <apex:outputText rendered="{!action.user.UserRoleId != null}">
+							<apex:outputText value="{!roleMap[action.user.UserRoleId].Name}"/>
+                        </apex:outputText>
+					</apex:column>
+					<apex:column >
+						<apex:facet name="header">Changes</apex:facet>
+						<apex:outputText rendered="{!action.addItemsString != ''}" escape="false">
+						<span style="color: green;">
+							<apex:outputText value="{!action.addItemsString}" escape="false" />
+						</span>
+						</apex:outputText>
+						<br />
+						<apex:outputText rendered="{!action.removeItemsString != ''}" escape="false">
+						<span style="color: red;">
+							<apex:outputText value="{!action.removeItemsString}" escape="false" />
+						</span>
+						</apex:outputText>
+					</apex:column>
+					<apex:column >
+						<apex:facet name="header">Action</apex:facet>
+						<apex:actionStatus id="saveUserStatus">
+							<apex:facet name="stop">
+								<apex:commandButton action="{!applyUserChanges}" rendered="{!calcResult.changesPending}" value="Apply changes" rerender="messages, status, theTable" status="saveUserStatus">
+									<apex:param name="eventId" value="{!action.user.Id}" assignTo="{!selectedUserId}"/>
+								</apex:commandButton>
+							</apex:facet>
+							<apex:facet name="start">
+								<apex:outputPanel >
+									<apex:image value="/img/loading32.gif" style="height: 15px;"/>
+									<apex:commandButton value="Processing..." disabled="true"/>
+								</apex:outputPanel>
+							</apex:facet>
+						</apex:actionStatus>
+					</apex:column>
+				</apex:pageBlockTable>
+				<apex:pageBlock id="hiddenBlock" rendered="false"></apex:pageBlock>
+				<apex:actionStatus id="savestatus">
+					<apex:facet name="stop">
+						<apex:commandButton action="{!applyChanges}" rendered="{!calcResult.changesPending}" value="Apply changes" rerender="messages, status, theTable" status="savestatus" />
+					</apex:facet>
+					<apex:facet name="start">
+						<apex:outputPanel >
+							<apex:image value="/img/loading32.gif" style="height: 15px;"/>
+							<apex:commandButton value="Processing..." disabled="true"/>
+						</apex:outputPanel>
+					</apex:facet>
+				</apex:actionStatus>
+			</apex:outputText> 
+		</apex:pageBlock>
+       	<apex:pageBlock title="Permission Group Graph" id="permission_group_graph">
+            <a href="{!GraphBuilderString}" target="_new">open</a>
+        </apex:pageBlock>
+		<apex:pageBlock title="Permission Group Overview" id="permission_group_overview">
+            <apex:selectList value="{!filterMode}" multiselect="false" size="1">
+                <apex:actionSupport action="{!applyFilter}" event="onchange" rerender="permission_group_overview"></apex:actionSupport>
+            	<apex:selectOption itemLabel="All" itemValue="all"></apex:selectOption>
+                <apex:selectOption itemLabel="Member-related only" itemValue="member"></apex:selectOption>
+                <apex:selectOption itemLabel="Assigned only" itemValue="assigned"></apex:selectOption>
+                <apex:selectOption itemLabel="With user-assignments only" itemValue="userAssigned"></apex:selectOption>
+                <apex:selectOption itemLabel="With profile-assignments only" itemValue="profileAssigned"></apex:selectOption>
+            </apex:selectList>
+			<apex:pageBlockTable value="{!apexPermissionGroupList}" var="pg" id="pgTable" rowClasses="odd,even" styleClass="tableClass">
+				<apex:column >
+					<apex:facet name="header">Permission Group</apex:facet>
+					<apex:outputText escape="false">
+						<a href='/{!pg.obj.Id}' target='_blank'>{!pg.obj.Name}</a> <a href="/apex/PermissionViewer?id={!pg.obj.Id}&objectType=assigned">[PV]</a>
+					</apex:outputText>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">Children</apex:facet>
+					<apex:outputText escape="false" value="{!pg.childrenHTML}" />
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">Parents</apex:facet>
+					<apex:outputText escape="false" value="{!pg.parentHTML}"/>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">Own permission sets</apex:facet>
+					<ul>
+						<apex:repeat value="{!pg.permissionSets}" var="psa">
+						<li class="ps">
+							<a href="/{!permissionSetMap[psa].Id}">{!permissionSetMap[psa].Name}</a> <a href="/apex/PermissionViewer?id={!permissionSetMap[psa].Id}&objectType=assigned">[PV]</a>
+						</li>
+						</apex:repeat>
+					</ul>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">All effective permission sets</apex:facet>
+					<ul>
+						<apex:repeat value="{!pg.effectivePermissionSets}" var="psa">
+						<li class="ps">
+							<a href="/{!permissionSetMap[psa].Id}">{!permissionSetMap[psa].Name}</a> <a href="/apex/PermissionViewer?id={!permissionSetMap[psa].Id}&objectType=assigned">[PV]</a>
+						</li>
+						</apex:repeat>
+					</ul>
+				</apex:column>
+				<apex:column >
+					<apex:facet name="header">Assignments</apex:facet>
+					<apex:outputText value="{!pg.assignmentString}" escape="false" />
+				</apex:column>
+			</apex:pageBlockTable>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

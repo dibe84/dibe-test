@@ -1,0 +1,224 @@
+<apex:page standardController="Opportunity" extensions="AdSalesIOExtension" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderas="pdf">
+    <head>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_EBAYK.css')}" html-media="print"/>
+
+    </head>
+    <body>
+        <div class="header">
+            <img src="{!URLFOR($Resource.pdfStyles,'img/Logo_EBAYK.jpg')}" title="logo" width="32%" style="float:right"/>
+            <p>eBay Kleinanzeigen GmbH<br/> 
+               Albert-Einstein-Ring 2-6<br/>  
+               14532 Kleinmachnow, Deutschland</p>
+        </div>
+
+        <div class="footer">
+            <table>
+                <tr>
+                    <td>        
+                        <p>eBay Kleinanzeigen GmbH<br/> 
+                           <b>Ust-ID</b>: DE238250605<br/>
+                           <b>Handelsregister-Nr.</b>: HRB 18681 P<br/>
+                           <b>Tax ID Nr</b>: 046/114/04846</p>
+                    </td>
+                    <td class="right">
+                        <div>Seite <span class="pagenumber"/> von <span class="pagecount"/></div>
+                    </td>       
+                </tr>    
+            </table>           
+        </div>
+
+        <div class="content" >
+            <h2>Vertrag über Servicepakete auf eBay Kleinanzeigen</h2>
+
+            <table>
+                <tr>
+                    <th colspan="4" class="bold">Kundendetails</th>
+                </tr>
+                <tr>
+                    <td class="bold">Kundenname:</td>
+                    <td>{!Opportunity.Account.Name}</td>
+                    <td class="bold">Rechnungsempfänger:</td>
+                    <td>{!Opportunity.Billing_Account__r.Name}</td>
+                </tr>
+                <tr>
+                    <td class="bold">USt-ID Nr:</td>
+                    <td>{!Opportunity.Billing_Account__r.Company_VAT_No__c}</td>
+                    <td class="bold">Handelsregister-Nr:</td>
+                    <td>{!Opportunity.Billing_Account__r.Company_Reg_No__c}</td>
+                </tr>
+                <tr>
+                    <td class="bold">Vertragsanschrift:</td>
+                    <td>{!Opportunity.Primary_Contact__r.MailingStreet}<br/>{!Opportunity.Primary_Contact__r.MailingCity} {!Opportunity.Primary_Contact__r.MailingPostalcode}<br/> {!Opportunity.Primary_Contact__r.MailingCountry}</td>
+                    <td class="bold">Vertragsnummer:</td>
+                    <td>{!Opportunity.IOnumber__c}</td>
+                </tr>
+                <tr>
+                    <td class="bold">Ansprechpartner:</td>
+                    <td>{!Opportunity.Primary_Contact__r.FirstName} {!Opportunity.Primary_Contact__r.LastName}</td>
+                    <td class="bold">Bestellnummer:</td>
+                    <td>{!Opportunity.P_O_Number__c}</td>
+                </tr>
+                <tr>
+                    <td class="bold">Tel:</td>
+                    <td>{!Opportunity.Primary_Contact__r.Phone}</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="bold">Email:</td>
+                    <td>{!Opportunity.Primary_Contact__r.Email}</td>
+                    <td class="bold">Rechnungsempfänger Email:</td>
+                    <td>{!Opportunity.Billing_Account__r.Finance_contact__r.Email}</td>
+                </tr>
+            </table>
+            <br/>
+
+            <table>
+                <tr>
+                    <th colspan="4" class="bold">eBay Kleinanzeigen Details </th>
+                </tr>
+                <tr>
+                    <td class="bold">Vertragspartner:</td>
+                    <td>eBay Kleinanzeigen GmbH</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="bold">Zahlungsempfänger:</td>
+                    <td>eBay Kleinanzeigen GmbH</td>
+                    <td class="bold">Ansprechpartner:</td>
+                    <td>{!Opportunity.Owner.name}</td>
+                </tr>
+                <tr>
+                    <td class="bold">Email:</td>
+                    <td>
+                        <apex:repeat var="email" value="{!availableEmails }">
+                            {!email} <br/>
+                        </apex:repeat>
+                    </td>
+                    <td class="bold">Telefon:</td>
+                    <td>{!Opportunity.Owner.Phone}</td>
+                </tr>
+                <tr>
+                    <td class="bold">Postanschrift:</td>
+                    <td>eBay Kleinanzeigen<br/>Marktplatz 1<br/>14532 Europarc Dreilinden</td>
+                </tr>  
+            </table>
+            
+            <br/>
+            
+            <table class="solid_border">
+                <tr>
+                    <th colspan="3" class="center bold" >Vertragsgegenstand</th>
+                    <th colspan="3" class="right bold">Preis (monatlich)</th>
+                </tr>
+                <tr>
+                    <th class="left bold">Produkt</th>
+					<th class="left bold">Vereinbarung</th>
+                    <th class="bold">Anzahl</th>
+                    <th class="bold" style="text-align: center;">Startdatum</th>
+                    <th class="top left bold" >
+                        <apex:outputPanel rendered="{! isDiscountSet }" layout="inline">
+                            Einzelpreis(€)
+                        </apex:outputPanel>
+                    </th>
+                    <th class="top, bold" >
+                        <apex:outputPanel rendered="{! isDiscountSet }" layout="inline">
+                            Rabatt(€)
+                        </apex:outputPanel>
+                    </th>
+                    <th class="top center bold" >
+                        <apex:outputPanel rendered="{! isDiscountSet }" layout="inline">
+                            Gesamtpreis(€)
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{! !isDiscountSet }" layout="inline">
+                            Gesamtpreis(€)
+                        </apex:outputPanel>
+                    </th>
+                </tr>
+                <apex:repeat var="oli" value="{!sortrecord}" >
+                    <tr>
+                        <td class="bottom left">
+                            <table>
+                                <tr class="bold"><td>{!oli.DefaultLineDescription__c}</td></tr>
+                                <tr>
+                                    <td>
+                                        <apex:outputText value="{!oli.PriceBookEntry.Product2.Description}" escape="false"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+						<td class="bottom left"><apex:outputText value="{!oli.Description}"/></td>
+                        <td class="bottom left"><apex:outputText value="{!FLOOR(oli.Quantity)}"/></td>
+                        <td class="bottom" style="text-align: center;" >{!day(oli.from_Date__c)}/{!month(oli.from_Date__c)}/{!year(oli.from_Date__c)}</td>
+                        <td class="bottom left">
+                            <apex:outputPanel rendered="{! isDiscountSet}" layout="inline">
+                                <c:LocalNumber my_Number="{!oli.ListPrice__c}" />
+                            </apex:outputPanel>
+                        </td>
+                        <td class="bottom">
+                            <apex:outputPanel rendered="{! isDiscountSet}" layout="inline">
+                                <c:LocalNumber my_Number="{! oli.SalesPriceNet__c - oli.ListPrice__c }" />
+                            </apex:outputPanel>
+                        </td>
+                        <td class="bottom right">
+                            <c:LocalNumber my_Number="{!oli.SalesPriceNet__c}"/>
+                        </td>
+                    </tr>
+                </apex:repeat>
+                <tr style="height:25px;"/>
+                <tr>
+                    <td colspan="4"></td>
+                    <td colspan="2" class="top bottom left">Netto Betrag (€)</td>
+                    <td class="top bottom right"><c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c}" /></td>
+                </tr>
+
+                <tr>
+                    <td colspan="4"></td>
+                    <td colspan="2" class="bottom left">USt.<apex:outputText rendered="{!Opportunity.Billing_Account__r.Apply_VAT__c == true}"><c:LocalNumber my_Number="{!Opportunity.Billing_Account__r.VAT__c}" /></apex:outputText><apex:outputText rendered="{!Opportunity.Billing_Account__r.Apply_VAT__c == false}">0</apex:outputText> % (€)</td>
+                    <td class="bottom right"><c:LocalNumber my_Number="{!Opportunity.VatAmount__c}"/></td>
+                </tr>
+                
+                <tr>
+                    <td colspan="4"></td>
+                    <td colspan="2" class="bottom left">Bruttobetrag (€)</td>
+                    <td class="bottom right"><c:LocalNumber my_Number="{!Opportunity.TotalAmountNet__c+Opportunity.VatAmount__c}"/></td>
+                </tr>
+            </table>
+            <br />
+            <br />
+
+            <div style="page-break-before:always;"/>
+
+            <h2>Laufzeit und Kündigung</h2>
+            <p>Der Vertrag wird auf unbestimmte Zeit geschlossen. Der Vertrag  kann jederzeit von einer Vertragspartei zum Ende des Folgemonats ordentlich gekündigt werden.</p>
+
+            <h2>Fälligkeit und Zahlung</h2>
+            <p>Der monatliche Betrag (s.o. unter „Gesamtpreis“) wird jeweils mit Ablauf eines Kalendermonats in Rechnung gestellt und ist sofort zur Zahlung fällig. Für den Fall der Vereinbarung der Zahlungsmethode SEPA-Lastschrift, wird der Zeitraum für die Vorabinformation auf 5 Tage verkürzt. In der jeweiligen Rechnung wird das Fälligkeitsdatum für die Lastschrift angegeben.</p>
+
+            <p><span class="bold">Mit meiner Unterschrift willige ich in die Nutzung meiner Daten gemäß der <a href="http://www.ebay-kleinanzeigen.de/datenschutzerklaerung.html">Datenschutzerklärung</a> der eBay Kleinanzeigen GmbH ein.</span>
+                Für die Nutzung von eBay Kleinanzeigen gemäß diesem Vertrag gelten die <a href="http://www.ebay-kleinanzeigen.de/hilfe/artikel/nutzungsbedingungen">Allgemeinen Nutzungsbedingungen</a> für eBay Kleinanzeigen.
+            </p>
+
+            <table>
+                <tr>
+                    <td>Kundenname:</td>
+                    <td class="echosign_container">{!Opportunity.Billing_Account__r.Name}</td>
+                </tr>
+                <tr>
+                    <td>Name:</td>
+                    <td class="echosign_container">{{_es_signer_fullname}}</td>
+                </tr>
+                <tr>
+                    <td>Datum:</td>
+                    <td class="echosign_container">{{_es_signer_date}}</td>
+                </tr>
+                <tr>
+                    <td>Unterschrift:</td>
+                    <td class="echosign_container" >{{_es_signer_signature}}</td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</apex:page>

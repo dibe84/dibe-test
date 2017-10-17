@@ -1,0 +1,125 @@
+<apex:page docType="html-5.0" 
+showHeader="false" 
+standardstylesheets="false" 
+sidebar="false" 
+standardController="Opportunity" 
+extensions="RAC_ProductConfigurator" 
+applyBodyTag="false"
+>
+<c:sObjectRemote />
+<!-- <apex:variable var="urlPrefix" value="{!URLFOR($Resource.productConfigurator)+'/'}" /> -->
+<apex:variable var="urlPrefix" value="https://localhost:8080/" />
+<!-- Css -->
+<apex:stylesheet value="{!URLFOR($Resource.lib, 'bootstrap/dist/css/bootstrap.min.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.lib, 'angular-toastr/dist/angular-toastr.css')}"/>
+<apex:stylesheet value="{!URLFOR(urlPrefix+ 'css/app.css')}"/>
+<!--<apex:stylesheet value="{!URLFOR($Resource.lib, 'eonasdan-bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css')}"/>-->
+
+<body ng-app="prodConf">
+
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#"><img alt="Brand" src="{!URLFOR(urlPrefix+ 'img/logo.jpg')}" height="30px" /></a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+              <li><a href="/{!Opportunity.Id}">Opportunity</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav> 
+
+    <div class="container" ng-controller="MainController">
+        
+        <!-- List of Olis -->
+        <div class="panel panel-default"><!--ng-controller="OliListController as controller"-->
+            <div pc-line-item-list="1" class="panel-body" >
+                <div ng-show="showLoadingOlis">
+                    <apex:image value="/img/loading.gif" />Loading Opportunity Line Items.
+                </div>
+
+                <div class="row" ng-show="!showLoadingOlis"> 
+                    <div class="col-sm-1"></div>
+                    <div class="col-sm-2"><h6>Description</h6></div>
+                    <div class="col-sm-1"><h6>Category</h6></div>
+                    <div class="col-sm-1"><h6>Calc</h6></div>   
+                    <div class="col-sm-1"><h6>from</h6></div>
+                    <div class="col-sm-1"><h6>until</h6></div>
+                    <div class="col-sm-1"><h6>UnitPrice</h6></div>
+                    <div class="col-sm-1"><h6>Quantity</h6></div>
+                    <div class="col-sm-1"><h6>Total</h6></div>
+                </div>
+                <div  ng-repeat="oli in olis track by oli.Id | limitTo:25" ng-show="!showLoadingOlis">
+                    <div pc-line-item="1" oli="oli" ng-hide="oli.attributes.editMode"></div>
+                    <div pc-line-item-edit="1" oli="oli" ng-show="oli.attributes.editMode"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Selector 
+        <div class="panel panel-default" ng-controller="ProductSelectController">
+            <div class="panel-body">
+                <div ng-show="showLoadingProducts">
+                    <apex:image value="/img/loading.gif" /> Loading available Products.
+                </div>
+                <div ng-show="!showLoadingProducts">
+                    Search: <input ng-model="searchText"/>[{{(products | filter:searchText).length}}]
+                    <table show-filter="true" class="table table-hover table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Name</div>
+                                <th>Description</div>
+                                <th>CPM Price</div>
+                                <th>CPC Price</div>
+                                <th>CPD Price</div>
+                            </tr>
+                        </divead>
+                        <tbody>
+                            <tr ng-repeat="prod in products | filter:searchText | limitTo:25" >
+                                <td>{{prod.Name}}</td>
+                                <td>{{prod.Product2.Description}}</td>
+                                <td>{{prod.Product2.CPM_Price__c}}</td>
+                                <td>{{prod.Product2.CPC_Price__c}}</td>
+                                <td>{{prod.Product2.CPD_Price__c}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                </div>
+                
+            </div>
+        </div>-->
+    </div><!-- End Container -->
+
+    <!-- Javascript -->
+    <!-- Init Required Client-side params from Backend -->
+    <script type="text/javascript">
+        ctrlVarOppId = '{!Opportunity.Id}';
+        crtrVarPricebookId = '{!Opportunity.Pricebook2Id}';
+        ctrlResourceUrl = '{!urlPrefix}';
+    </script>
+
+
+    <apex:includeScript value="{!URLFOR($Resource.lib, 'jquery/dist/jquery.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib, 'angular/angular.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib, 'bootstrap/dist/js/bootstrap.min.js')}"/>
+    <!-- <apex:includeScript value="{!URLFOR($Resource.lib, 'moment/moment.min.js')}"/> -->
+    <!-- <apex:includeScript value="{!URLFOR($Resource.lib, 'eonasdan-bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib, 'angular-bootstrap/ui-bootstrap-tpls.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib, 'angular-animate/angular-animate.min.js')}"/> -->
+    <apex:includeScript value="{!URLFOR($Resource.lib, 'angular-toastr/dist/angular-toastr.tpls.js')}"/>
+    
+    <!-- Load js from static resource -->
+    <apex:includeScript value="{!urlPrefix+ 'js/app.js'}"/>
+    <apex:includeScript value="{!urlPrefix+ 'js/services/Oli.js'}"/>
+    <apex:includeScript value="{!urlPrefix+ 'js/services/OliCalculator.js'}"/>
+    <apex:includeScript value="{!urlPrefix+ 'js/controllers/MainController.js'}"/>
+    <apex:includeScript value="{!urlPrefix+ 'js/controllers/OliListController.js'}"/>
+    <apex:includeScript value="{!urlPrefix+ 'js/controllers/ProductSelectController.js'}"/>
+    <apex:includeScript value="{!urlPrefix+ 'js/directives/pcLineItem.js'}"/>
+    <apex:includeScript value="{!urlPrefix+ 'js/directives/pcLineItemEdit.js'}"/>
+    <apex:includeScript value="{!urlPrefix+ 'js/directives/pcLineItemList.js'}"/>
+    <apex:includeScript value="{!URLFOR($Resource.lib, 'common/angularforce.js')}"/>
+</body>
+</apex:page>

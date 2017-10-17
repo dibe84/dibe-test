@@ -1,0 +1,220 @@
+<!-- New Opportunity or Edit Opportunity redirector (Invoke from Account/Opportunity detail page/Opportunity list view)
+ --- @BUSINESS: - CD-2287 New Opportunity button - Redirect
+ ---            - CD-2312 New Opportunity button - Redirect part 2
+ --- @AUTHOR  SOTHEA HORN
+ --- @CREATED 22 APRIL 2017
+ -->
+<apex:page standardcontroller="Opportunity" extensions="PGC_OpportunityNewEditButtonRedirector" showHeader="false" sidebar="false">
+	<head>
+		<link rel="stylesheet" href="/resource/lightning_component/assets/styles/salesforce-lightning-design-system.min.css" type="text/css" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js" ></script>
+		
+		<style>
+			.wrapper{
+				padding-left: 25%;
+    			padding-right: 25%;
+			}
+			.slds-lookup__menu{
+				width: 89.5% !important;
+			}
+			#theBtnNext{
+				margin-left: 50%;
+			}
+			.imgAdd{
+			    width: 15px !important;
+    			height: 15px !important;
+			}
+			.newAccount a:hover {
+			    text-decoration: none;
+			}
+			.slds-modal__footer{
+				border-top: 1px solid #d8dde6;
+				box-shadow: none;
+			}
+			.wrapperBody{
+				height: 250px;
+			}
+			.fontLabel{
+				font-size: 15px;
+			    float: left;
+			}
+			.imgSearch{
+				top: 60% !important;
+    			margin-top: 0px !important;
+			}
+		</style>
+		
+	</head>
+	
+	<apex:variable var="accId" value="{!Opportunity.AccountId}" />
+	<apex:variable var="enableTract" value="{!Opportunity.MemberUnit__r.EnableTRACT__c}" />
+	
+	<apex:form id="theOppForm">
+		<apex:actionFunction name="doRedirect" action="{!redirect}" rerender="theMainPanel"/>
+		<apex:actionFunction name="doGoToCurrentPage" action="{!goToCurrentPage}"/>
+		<apex:actionFunction name="doNext" action="{!doNext}"/>
+		<apex:actionFunction name="searchAccount" action="{!searchAccount}" rerender="accSelectPanel" oncomplete="showAccSelectList()">
+			<apex:param name="searchstring" value="" assignTo="{!searchStr}"/>
+		</apex:actionFunction>
+		<apex:actionFunction name="doSetSelectedAccId" action="{!setSelectedAccId}" rerender="accSelectPanel">
+			<apex:param name="selAccId" value=""/>
+		</apex:actionFunction>
+		
+   </apex:form>	
+    <apex:outputPanel id="theMainPanel">
+	     <apex:outputPanel id="theLoading" rendered="{!AND(NOT(isChooseAcc), NOT(isError))}">
+		     <div class="slds-spinner_container">
+				<div role="status" class="slds-spinner slds-spinner--large slds-spinner--brand">
+					<span class="slds-assistive-text">Creating Billing Account Tract</span>
+					<div class="slds-spinner__dot-a"></div>
+					<div class="slds-spinner__dot-b"></div>
+				</div>
+			</div>
+		</apex:outputPanel>
+		<apex:outputPanel id="theErrPanel" rendered="{!isError}">
+			<div id="theErrDialog" role="alertdialog" tabindex="-1" aria-labelledby="prompt-heading-id" aria-describedby="prompt-message-wrapper" class="slds-modal slds-fade-in-open slds-modal--prompt">
+				<div class="slds-modal__container">
+					<div class="slds-modal__header slds-theme--error slds-theme--alert-texture">
+						<h2 class="slds-text-heading--medium" id="prompt-heading-id"> Error Creating Billing Account Tract</h2>
+				    </div>
+					<div class="slds-modal__content slds-p-around--medium slds-text-align--center">
+						<p>{!errMsg}</p>
+					</div>
+					<div class="slds-modal__footer slds-theme--default">
+						<button id="theBtnOk" class="slds-button slds-button--neutral" onclick="goToCurrentPage();">Okay</button>
+				    </div>
+				</div>
+			</div>
+			<div class="slds-backdrop slds-backdrop--open"></div>
+		</apex:outputPanel>
+		
+		<apex:outputPanel id="theAccSelectionPanel" rendered="{!AND(NOT(isError), isChooseAcc)}">
+			
+			<div role="dialog" tabindex="-1" aria-labelledby="header43" class="slds-modal slds-fade-in-open">
+			  <div class="slds-modal__container">
+			    <div class="slds-modal__header">
+				    <div class="slds-page-header">
+					  <div class="slds-grid">
+					    <div class="slds-col slds-has-flexi-truncate">
+					      <div class="slds-media slds-no-space slds-grow">
+					        <div class="slds-media__figure">
+					          <img class="slds-icon slds-icon-standard-opportunity" src="/resource/lightning_component/assets/icons/standard/opportunity_120.png"/>
+					        </div>
+					        <h1 class="slds-page-header__title slds-m-right--small slds-align-middle slds-truncate" title="this should match the Record Title">New Opportunity</h1>
+					        
+					      </div>
+					    </div>
+				    </div>
+			    </div>
+			    <div class="slds-modal__content slds-p-around--medium wrapperBody">
+			    	<label class="slds-form-element__label slds-text-title slds-text-align--left fontLabel" for="accName">Select an Account</label>
+			    	<div class="slds-form-element__control">
+					    <div class="slds-input-has-icon slds-input-has-icon--right">
+					    	<img class="slds-icon--xx-small slds-icon slds-input__icon imgSearch" src="/resource/lightning_component/assets/icons/utility/search_60.png" onclick="showAccSelectList();"/>
+					      	<input type="text" id="search" class="slds-lookup__search-input slds-input" placeholder="Search Accounts" onfocus="showAccSelectList();" onkeyup="doSearch();" onfocusout ="hideAccSelectList();"/>
+					    </div>
+					  </div>
+			    
+			      <apex:outputPanel id="accSelectPanel">
+					  <div class="slds-lookup__menu" id="menu">
+					    <div class="slds-lookup__item--label slds-text-body--small">Recent Accounts</div>
+					    <ul class="slds-lookup__list" role="listbox" id="listContentAcc" >
+					     <apex:repeat value="{!listAccsOptions}" var="acc" id="theRepeatAcc" rows="4">
+						      <li role="presentation" id="{!acc.Id}" onclick="changeAccount(this.id)">
+						        <span class="slds-lookup__item-action slds-media" role="option">
+						        	<img src="/resource/lightning_component/assets/icons/standard/account_120.png" class="slds-icon slds-icon-standard-account slds-icon--small slds-media__figure" alt="Account" title="Account" / >
+						          	<div class="slds-media__body">
+						            	<div class="slds-lookup__result-text" title="{!acc.Name}" id="dev_{!acc.Id}">{!acc.Name}</div>
+						          	</div>
+					        	</span>
+						      </li>
+					      </apex:repeat>
+					    </ul>
+					    <div class="slds-lookup__item--label slds-text-body--small newAccount">
+					    	<a href="/001/e">
+						    	<span class="slds-icon_container slds-icon-utility-add itemIcon slds-icon slds-icon--x-small slds-m-left--x-small slds-icon-text-default slds-button__icon forceIcon">
+									<img class="slds-icon--xx-small slds-icon imgAdd" src="/resource/lightning_component/assets/icons/utility/add_60.png"/>
+								</span>
+								<span class="itemLabel slds-truncate slds-m-left--xx-small">New Account</span>
+							</a>
+					    </div>
+					  </div>
+				  </apex:outputPanel>
+			    </div>
+			    <div class="slds-modal__footer">
+			      <button class="slds-button slds-button--neutral" onclick="goToCurrentPage();">Cancel</button>
+			      <button class="slds-button slds-button--brand buttonNext" disabled="true" onclick="nextStep();">Next</button>
+			    </div>
+			  </div>
+			</div>
+			</div>
+			<div class="slds-backdrop slds-backdrop--open"></div>
+			
+		</apex:outputPanel>
+		
+	</apex:outputPanel>
+		
+		<script>
+			$(function() {
+				doRedirect();
+			});
+			
+			function goToCurrentPage() {
+				$("#theErrDialog").hide();
+				doGoToCurrentPage();
+			}
+			function nextStep(){
+				doNext();
+			}
+			
+			function disableBtnNext(isDisabled) {
+				if (isDisabled) {
+					$(".buttonNext").attr("disabled", "true");
+				} else {
+					$(".buttonNext").removeAttr("disabled");
+				}
+				
+			}
+			
+			function getAccSelectList(){
+				return $(".slds-lookup__menu");
+			}
+			
+			function getSearchComponent() {
+				return $("#search");
+			}
+			
+			function getSearchString() {
+				return getSearchComponent().val();
+			}
+			
+			function showAccSelectList(){
+				getAccSelectList().css("display", "block");
+			}
+		    
+		    function hideAccSelectList(){
+		    	setTimeout(function(){
+			    	getAccSelectList().css("display", "none");
+				 }, 200);
+		    }
+		    
+		    function doSearch(){
+		    	var searchStr = getSearchString();
+		    	searchAccount(searchStr);
+		    	showAccSelectList();
+		    	disableBtnNext(true);
+		    }
+		    
+		    function changeAccount(currentId){
+		    	var accName = $("#dev_"+currentId).text();
+		    	getSearchComponent().val(accName);
+		    	var searchStr = getSearchString();
+		    	if(searchStr !== 'undefined' && searchStr !== null){
+		    		disableBtnNext(false);
+		    	}
+		    	doSetSelectedAccId(currentId);
+		    }
+		</script>
+		
+   
+</apex:page>

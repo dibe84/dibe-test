@@ -1,0 +1,98 @@
+<apex:page wizard="false" 
+showQuickActionVfHeader="false" 
+cache="false" 
+standardStylesheets="false" 
+showHeader="false" 
+setup="false" 
+showChat="false" 
+sidebar="false" 
+applyHtmlTag="false" 
+applyBodyTag="false">
+    <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <style>
+                body{
+                    padding: 0;
+                    margin: 0;
+                }
+                #loadingFirstLoad{
+                    position: fixed;
+                    width: 100px;
+                    height: 100px;
+                    top: 50%;
+                    margin-top: -50px;
+                    z-index: 10000;
+                    left: 0;
+                    right: 0;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                #loadingFirstLoad img{
+                    width: 100%;
+                }
+                @media (max-width: 1024px){
+                    #loadingFirstLoad{
+                        top: 300px;
+                    }
+                }
+                @media (max-width: 768px) and (min-width: 768px){
+                    #loadingFirstLoad{
+                        top: 400px;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <div id="loadingFirstLoad">
+                <img src="{!URLFOR($Resource.lightning_component, 'assets/images/spinners/slds_spinner_brand.gif')}" alt="Loading Conponent" />
+            </div>
+            <apex:includeLightning />
+        
+            <div id="lightning" />
+            
+            <script>
+                
+                var GTZAConfig = {
+                    loadApp : 'c:GTZA_UserRegistration',
+                    mainComp : 'c:GTZA_UserRegisterForm',
+                    cssFile : 'gt-za-registration-form.css'
+                };
+                
+                var MPADMARKTConfig = {
+                    loadApp : 'c:MP_ADMARKT_UserRegistration',
+                    mainComp : 'c:MP_ADMARKT_UserRegisterForm',
+                    cssFile : 'mp-admarkt-registration-form.css'
+                };
+                        
+                var memberunit = "{!JSENCODE($CurrentPage.parameters.memberunit)}";
+                var leadType = "{!JSENCODE($CurrentPage.parameters.leadType)}";
+                var showInven = "{!JSENCODE($CurrentPage.parameters.showInven)}";
+                if(!memberunit){
+                    alert('Invalid MemberUnit !');
+                }
+                
+                var loadConfig = memberunit.startsWith("GTZA") ? GTZAConfig : MPADMARKTConfig;
+            
+                $Lightning.use(loadConfig.loadApp, function() {
+                    $Lightning.createComponent(loadConfig.mainComp,
+                    { 
+                        cssFile : loadConfig.cssFile, 
+                        authToken : "{!$Api.Session_ID}",
+                        memberunit : memberunit,
+                        siteLang : "{!JSENCODE($CurrentPage.parameters.lang)}",
+                        leadType : leadType,
+                        showInven : showInven
+                    },
+                    "lightning",
+                    function(cmp) {
+                       // do some stuff
+                       document.getElementById('loadingFirstLoad').style.display = 'none';
+                       document.getElementById('lightning').className = '';
+                    });
+                });
+
+            </script>
+        </body>
+    </html>
+</apex:page>

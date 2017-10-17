@@ -1,0 +1,12 @@
+<apex:page standardcontroller="OpportunityLineItem" extensions="TreeCountriesController" tabStyle="Opportunity" sidebar="false" ShowHeader="{!If(isConf == true, false, true)}" setup="false" > 
+     <!-- 
+     	Change log:
+     		- change from {!$Resource.TreeCountriesSWF2} to {!$Resource.TreeCountriesSWF3}
+     		- to query only the active countries
+     		- modifieddate : 25/04/2014
+      -->
+     <div style="height:630;width:840;" align="center" >
+        <apex:flash src="{!$Resource.TreeCountriesSWF3}" height="630" width="830"
+            flashvars="userId={!$User.Id}&session_id={!sessionId}&server_url={!$Api.Partner_Server_URL_120}&lineItemId={!lineItemId}&targetId={!targetId}&checked={!checkedNodes}&fromId={!fromId}&isConf={!isConf}&hideId={!hideId}" />
+     </div> 
+</apex:page>

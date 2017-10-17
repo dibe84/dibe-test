@@ -1,0 +1,405 @@
+<apex:page sidebar="false" showHeader="false" standardStylesheets="false" applyBodyTag="false" applyHtmlTag="false" controller="c_BaseOrderController">
+    <style type="text/css">
+        .hidden {
+            display: none;
+        }
+        
+        .inactive {
+            opacity: 0.5;
+        }
+        
+        .valid {
+            border: 1px solid green;
+        }
+        
+        .invalid {
+            border: 1px solid red;
+        }
+        
+    </style>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.66.0-2013.10.09/jquery.blockUI.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.0.5/bluebird.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script type="text/javascript">
+        var order = null;
+        var portalProductMap = {!portalProductMap};
+        var pricingMap = {!pricingMap};
+        
+        function serializeForm($form){
+            return _.object(_.map($form.serializeArray(), function(item){return [item.name, item.value]; }));
+        }
+        
+        /* Step map: 
+                1: Select product
+                2: Enter/verify information
+                3: Confirmation
+        */
+        
+        function Order() {
+            this.currentStep = null;
+            this.isFinalized = false;
+            this.initialize();
+        }
+        
+        Order.prototype = {
+            initialize: function() {
+                // Check if we have any existing order....
+                this.currentStep = 1;
+            },
+            next: function() {
+                // Should Block UI here
+                this.lock();
+                switch(this.currentStep) {
+                    case 1:
+                        if (this.validate('productSelected')) {
+                            $("td#selected_package").html(portalProductMap[this.selectedProductId].Name);
+                            $("td#order_total").html(pricingMap[this.selectedProductId].CurrencyIsoCode + ' ' + pricingMap[this.selectedProductId].UnitPrice);
+                            this.currentStep = 2;
+                            this.transition(2);
+                        } else {
+                            this.throw('No valid product was selected');
+                        }                        
+                        this.unlock();
+                        break;
+                    case 2:
+                        $('input').removeClass('invalid');
+                        this.save()
+                            .then((function(result) {
+                                this.currentStep = 3;
+                                this.transition(3);
+                                this.unlock();
+                            }).bind(this))
+                            .catch((function(err) {
+                                if (err.errorFieldMap) {
+                                    for (var x in err.errorFieldMap) {
+                                        $('input[name="'+x+'"]').addClass('invalid');
+                                    }
+                                }
+                                this.throw(err);
+                                this.unlock();
+                            }).bind(this));                        
+                        break;
+                    default:
+                        this.throw('You are trying to do something impossible here...');
+                        break;
+                }
+            },
+            prev: function() {
+                this.lock();
+                switch(this.currentStep) {
+                    case 1:
+                        return false;
+                        break;
+                    case 2:
+                        this.currentStep = 1;
+                        this.transition(1);
+                        break;
+                    default:
+                        this.throw('You are trying to navigate backward while there is no previousstep');
+                        break;
+                }
+                this.unlock();
+            },
+            transition: function(page) {
+                $("div.portal_order_page").hide();
+                $("div#order_"+page).show();
+            },
+            save: function() {
+                return new Promise((function(resolve, reject) {
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.c_BaseOrderController.save}',
+                        JSON.stringify(serializeForm($("form"))), 
+                        function(result, event){
+                            console.log('response', result, event);
+                            if (event.status) {
+                                // Process;
+                                console.log(result);
+                                if (result.success) {
+                                    console.log('resolving');
+                                    resolve(result);
+                                } else {
+                                    console.log('rejecting');
+                                    reject(result);
+                                }
+                            } else if (event.type === 'exception') {
+                                console.log('save fail1', result, event);
+                                reject(event.message);
+                            } else {
+                                 console.log('save fail2', result, event);
+                                reject(event.message);
+                            }
+                        }, 
+                        {escape: true}
+                    );
+                }).bind(this));
+            },
+            validate: function(type) {
+                switch(type) {
+                    case "productSelected":
+                        if (this.selectedProductId != null) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    case "input":
+                        var error = false;
+                        //$("")
+                        
+                        break;
+                }
+            },
+            process: function() {
+            
+            },
+            promptCaseCreation: function() {
+                this.transition('case');
+            },
+            previousCase: function() {
+                this.selectedProductId = null;
+                this.transition(1);
+            },
+            submitCase: function() {
+                console.log('Submit case');
+                new Promise((function(resolve, reject) {
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.c_BaseOrderController.submitCase}',
+                        JSON.stringify(serializeForm($("form[id='case']"))), 
+                        function(result, event){
+                            console.log('response', result, event);
+                            if (event.status) {
+                                // Process;
+                                console.log(result);
+                                if (result.success) {
+                                    console.log('resolving');
+                                    resolve(result);
+                                } else {
+                                    console.log('rejecting');
+                                    reject(result);
+                                }
+                            } else if (event.type === 'exception') {
+                                console.log('save fail1', result, event);
+                                reject(event.message);
+                            } else {
+                                 console.log('save fail2', result, event);
+                                reject(event.message);
+                            }
+                        }, 
+                        {escape: true}
+                    );
+                }).bind(this)).then((function(result) {
+                    this.transition('3');
+                }).bind(this)).catch((function(err) {
+                    this.throw('Exception: ' + err);
+                }).bind(this));
+                
+            },
+            selectProduct: function(portalProductId) {
+                if (portalProductMap[portalProductId] != undefined) {
+                    console.log('Selected product', portalProductMap[portalProductId]);
+                    this.selectedProductId = portalProductId;
+                    $("input[name='product_id']").val(portalProductId);
+                    switch(portalProductMap[portalProductId].OrderMethod__c) {
+                        case "Self-Service":
+                            this.next();
+                            break;
+                        case "Case":
+                            this.promptCaseCreation();
+                            break;
+                        default:
+                        
+                            break;
+                    }                    
+                } else {
+                    this.throw('There is currently a problem with this product');
+                }
+            },
+            lock: function() {
+                $.blockUI();
+            },
+            unlock: function() {
+                $.unblockUI();
+            },
+            throw: function(msg) {
+                console.log('Throwing', msg);
+                //alert('Exception: ' + msg);
+            }
+        }
+        
+        window.onload = function() {
+            order = new Order();
+            $("input").on('focus', function() {
+                $(this).removeClass('invalid');
+            });
+        }
+    </script>
+    <apex:outputText rendered="{!hasActiveOrder == false}">
+    <div id="order_1" class="portal_order_page">
+        <div class="portal_product_intro">
+            Hello John, please select a product below.
+        </div>
+        <apex:repeat value="{!availablePortalProductGroupings}" var="grouping">
+            <div class="portal_product_grouping">
+                <apex:outputText rendered="{!grouping.ShowGroupingName__c}">
+                <div class="name">
+                    {!grouping.Name}
+                </div>
+                </apex:outputText>
+                <div class="product_container">
+                <apex:repeat value="{!availablePortalProductGroupings[grouping]}" var="product">
+                    <div class="product">
+                        {!product.Name}
+                        <div class="price">
+                        {!portalProductToPrice[product.Id].CurrencyIsoCode} {!portalProductToPrice[product.Id].UnitPrice} <apex:outputText rendered="{!CONTAINS(product.Product__r.Billing_Category__c, 'Subscription_MonthlyProRata')}"> per month</apex:outputText>
+                        </div>
+                        <div class="purchase">
+                            <a href="#" onclick="order.selectProduct('{!product.Id}'); return false;">Buy now</a>
+                        </div>
+                    </div>
+                </apex:repeat>
+                </div>
+            </div>
+        </apex:repeat>
+    </div>
+    <div id="order_2" class="portal_order_page hidden">
+        Page 2
+        <form method="post" action="#" id="main">
+        <input type="hidden" name="finance_id" value="" />
+        <input type="hidden" name="product_id" value="" />
+        <table>
+            <tr>
+                <th colspan="2">My Details</th>
+            </tr>
+            <tr>
+                <td>First name</td>
+                <td><input type="text" name="details_firstname" value="{!currentContact.Firstname}" /></td>
+            </tr>
+            <tr>
+                <td>Last name</td>
+                <td><input type="text" name="details_lastname" value="{!currentContact.Lastname}" /></td>
+            </tr>
+            <tr>
+                <td>Email address</td>
+                <td><input type="text" name="details_email" value="{!currentContact.Email}" /></td>
+            </tr>
+            <tr>
+                <th colspan="2">Finance Contact Details</th>
+            </tr>
+            <tr>
+                <td>First name</td>
+                <td><input type="text" name="finance_firstname" value="" /></td>
+            </tr>
+            <tr>
+                <td>Last name</td>
+                <td><input type="text" name="finance_lastname" value="" /></td>
+            </tr>
+            <tr>
+                <td>Email address</td>
+                <td><input type="text" name="finance_email" value="" /></td>
+            </tr>
+            <tr>
+                <td>Phone number</td>
+                <td><input type="text" name="finance_phone" value="" /></td>
+            </tr>
+            <tr>
+                <th colspan="2">Billing preferences</th>
+            </tr>
+            <tr>
+                <td>IBAN</td>
+                <td><input type="text" name="iban" value="{!currentAccount.Bank_AccountNumber__c}" /></td>
+            </tr>
+            <tr>
+                <td>VAT #</td>
+                <td><input type="text" name="vat" value="{!currentAccount.Company_VAT_No__c}" /></td>
+            </tr>
+            <tr>
+                <td>Billing Street</td>
+                <td><input type="text" name="billingaddress_street" value="{!currentAccount.BillingStreet}" /></td>
+            </tr>
+            <tr>
+                <td>Billing Postcode</td>
+                <td><input type="text" name="billingaddress_postcode" value="{!currentAccount.BillingPostalCode}" /></td>
+            </tr>
+            <tr>
+                <td>Billing City</td>
+                <td><input type="text" name="billingaddress_city" value="{!currentAccount.BillingCity}" /></td>
+            </tr>
+            <tr>
+                <td>Billing Country</td>
+                <td><input type="text" name="billingaddress_country" value="{!currentAccount.BillingCountry}" /></td>
+            </tr>
+            <tr>
+                <th colspan="2">Selected package</th>
+            </tr>
+            <tr>
+                <td id="selected_package"></td> 
+            </tr>
+            <tr>
+                <th colspan="2">Agreements</th>
+            </tr>
+            <tr>
+                <td colspan="2"><input type="checkbox" name="checkbox_conditions" />I agree to the terms and conditions</td>                
+            </tr>
+            <tr>
+                <td colspan="2"><input type="checkbox" name="checkbox_mandate" />I hereby authorize ECG to direct debit fees from my account</td> 
+            </tr>
+            <tr>
+                <th colspan="2">Total</th>
+            </tr>
+            <tr>
+                <td id="order_total"></td> 
+            </tr>
+        </table>
+        
+        </form>
+        <div class="nav">
+            <a href="#" onclick="order.prev(); return false;">&laquo;Previous</a>
+            <a href="#" onclick="order.next(); return false;">Confirm&raquo;</a>
+        </div>
+    </div>
+    <div id="order_case" class="portal_order_page hidden">
+        <p>Unfortunately it is not possible to order this product through self-service, if you would like to order this product we gladly call you back when convenient in order to get this product setup for you.</p>
+        <form id="case" method="post">
+            <input type="hidden" name="product_id" value="" />
+            <table>
+                <tr>
+                    <td>First name</td>
+                    <td><input type="text" name="details_firstname" value="{!currentContact.Firstname}" /></td>
+                </tr>
+                <tr>
+                    <td>Last name</td>
+                    <td><input type="text" name="details_lastname" value="{!currentContact.Lastname}" /></td>
+                </tr>
+                <tr>
+                    <td>Email address</td>
+                    <td><input type="text" name="details_email" value="{!currentContact.Email}" /></td>
+                </tr>
+                <tr>
+                    <td>Phone Number</td>
+                    <td><input type="text" name="details_phone" value="{!currentContact.Phone}" /></td>
+                </tr>
+                <tr>
+                    <td>Prefered contact time</td>
+                    <td><input type="text" name="contact_time" value="" /></td>
+                </tr>
+            </table>
+        </form>
+        <div class="nav">
+            <a href="#" onclick="order.previousCase(); return false;">&laquo;Previous</a>
+            <a href="#" onclick="order.submitCase(); return false;">Confirm&raquo;</a>
+        </div>
+    </div>
+    <div id="order_3" class="portal_order_page hidden">
+        Thanks for placing your order, you will receive confirmation of your order by e-mail within the next few minutes.
+        <div class="nav">
+            <a href="#" onclick="window.location.href='/';">Back to home&raquo;</a>
+        </div>
+    </div>
+    
+    </apex:outputText>
+    <apex:outputText rendered="{!hasActiveOrder == true}">
+        <div id="order_1">
+            You currently have a pending order, please wait a few minutes for this to be processed.
+        </div>
+    </apex:outputText>
+</apex:page>

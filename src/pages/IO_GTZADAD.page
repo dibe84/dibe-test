@@ -1,0 +1,328 @@
+<apex:page standardController="Opportunity" extensions="AdSalesIOExtension" showHeader="false" applyHtmlTag="false" applyBodyTag="false" renderAs="pdf">
+<html>
+    <head>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO.css')}"/>
+        <apex:styleSheet value="{!URLFOR($Resource.pdfStyles, 'css/IO_GTZADAD.css')}"/>
+    </head>
+
+    <body>
+        <div class="footer">
+            <table border="0" bgcolor="#38341F" cellspacing="0" cellpadding="0" width="100%" id="table2">
+                <tr>
+                    <td class="left mainHeader">
+                        <apex:outputText rendered="{!memberAcc != null}">
+                        {!memberAcc.Phone}<br/>
+                        {!memberAcc.Email__c}<br/>
+                        {!memberAcc.Website}<br/>
+                        Office Hours : 08.00 - 16.00
+                        </apex:outputText>
+                    </td>
+                    <td class="right mainHeader">
+                        <apex:outputText rendered="{!memberAcc != null}">
+                        Registered in South Africa No. 2013/136737/10<br/>
+                        VAT Registration No. {!memberAcc.Company_VAT_No__c}
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div>
+            <table border="0" bgcolor="#38341F" cellspacing="0" cellpadding="0" width="100%" id="table1">
+                <tr>
+                    <td>
+                        <img src="{!URLFOR($Resource.pdfStyles,'img/Gumtree-NewLogo-Horizontal-01.png')}" title="logo" width="120px"/>
+                    </td>
+                    <td class="right mainHeader">
+                        Gumtree (Pty) Ltd<br/>
+                        Convention Tower Mezzanine<br/>
+                        Level 1 &amp; 2, Cnr Heerengracht Street and Walter Sisulu Ave Foreshore<br/>
+                        Cape Town 8001
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Basic info -->
+            <table border="0" class="darkFont" width="100%">
+                <tr>
+                    <td class="right bold" width="23%"><b>IO Number</b></td>
+                    <td width="27%">{!Opportunity.IOnumber__c}</td>
+                    <td class="right bold" width="23%"><b>Date</b></td>
+                    <td width="27%">
+                        <apex:outputText value="{0, date, MMMM d','  yyyy}">
+                            <apex:param value="{!NOW()}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Advertiser Information -->
+            <table  class="darkFont" border="0" width="100%">
+
+                <tr>
+                    <th colspan="4" class="left sectionHeader thintopborder thinbottomborder"><b>Advertiser Information</b></th>
+                </tr>
+            
+            </table>
+            
+            <table class="darkFont" width="100%" id="table_advertiser">
+            
+                <tr>
+                    <td class="right" width="23%"><b>Planning Agency: </b></td>
+                    <td class="left bold" width="27%">{!Opportunity.Agency__r.Name}</td>
+                    <td class="right bold" width="23%"><b>Contact Name: </b></td>
+                    <td width="27%">{!Opportunity.Primary_Contact__r.FirstName} {!Opportunity.Primary_Contact__r.LastName}</td>
+                </tr>    
+                <tr>
+                    <td class="right bold"><b>Advertiser: </b></td>
+                    <td>{!Opportunity.Account.Name}</td>
+                    <td class="right bold"><b>Contact Phone: </b></td>
+                    <td>{!Opportunity.Primary_Contact__r.Phone}</td>
+                </tr>    
+                <tr>
+                    <td class="right bold"><b>Campaign: </b></td>
+                    <td>{!Opportunity.Name}</td>
+                    <td class="right bold "><b>Contact Email: </b></td>
+                    <td>{!Opportunity.Primary_Contact__r.Email}</td>
+                </tr>    
+                <tr>
+                    <td class="right bold"><b>Campaign Start Date: </b></td>
+                    <td>
+                        <apex:outputText value="{0, date, MMMM d','  yyyy}">
+                            <apex:param value="{!Opportunity.CampaignStart__c}" /> 
+                        </apex:outputText>
+                    </td>
+                    <td class="right bold"><b>Billing Contact: </b></td>
+                    <td>{!Opportunity.Billing_Account__r.Finance_contact__r.Name} {!Opportunity.Account.Finance_contact__r.LastName}</td>
+                </tr>    
+                <tr>
+                    <td class="right bold"><b>Campaign End Date: </b></td>
+                    <td>
+                        <apex:outputText value="{0, date, MMMM d','  yyyy}">
+                            <apex:param value="{!Opportunity.CampaignEnd__c}" /> 
+                        </apex:outputText>
+                    </td>
+                    <td class="right bold "><b>Billing Address: </b></td>
+                    <td>{!Opportunity.Billing_Account__r.BillingStreet}</td>
+                </tr>    
+                <tr>
+                    <td colspan="2"></td>
+                    <td class="right bold "><b>Billing Email: </b></td>
+                    <td class="">{!Opportunity.Billing_Account__r.Finance_contact__r.Email}</td>
+                </tr>
+                <tr>
+                    <td colspan="2"></td>
+                    <td class="right bold "><b>Billing Currency: </b></td>
+                    <td>{!Opportunity.CurrencyIsoCode}</td>
+                </tr>
+                <tr>
+                    <td colspan="2"></td>
+                    <td class="right bold"><b>VAT Number: </b></td>
+                    <td>{!Opportunity.Billing_Account__r.Company_VAT_No__c}</td>
+                </tr>
+
+                <tr colspan="4" width="100%">
+                    <td colspan="4"></td>
+                </tr>
+
+                <tr colspan="4" width="100%">
+                    <td colspan="4"></td>
+                </tr>
+
+            </table>
+
+            <!-- Publisher Information -->
+            <table  class="darkFont" border="0" width="100%">
+
+                <tr>
+                    <th class="left sectionHeader thintopborder thinbottomborder" width="35%"><b>Publisher Information</b></th>
+                </tr>
+            
+            </table>
+            
+            <table border="0" class="darkFont" width="100%" id="table_advertiser">
+
+                <tr>
+                    <td class="right bold" width="23%"><b>Sales Contact: </b></td>
+                    <td width="27%">{!Opportunity.Owner.FirstName} {!Opportunity.Owner.LastName}</td>
+                    <td class="right bold" width="23%"><b>Billing Contact: </b></td>
+                    <td width="27%">{!Opportunity.Primary_Contact__r.FirstName} {!Opportunity.Primary_Contact__r.LastName}</td>
+                </tr>    
+                <tr>
+                    <td class="right bold"><b>Sales Phone: </b></td>
+                    <td>{!Opportunity.Owner.Phone}</td>
+                    <td class="right bold"><b>Billing Phone: </b></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="right bold"><b>Sales Fax: </b></td>
+                    <td>{!Opportunity.Owner.Fax}</td>
+                    <td class="right bold"><b>Billing Fax: </b></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="right bold"><b>Sales Email: </b></td>
+                    <td>{!Opportunity.Owner.Email}</td>
+                    <td class="right bold"><b>Billing Email: </b></td>
+                    <td></td>
+                </tr>
+
+            </table>
+
+            <!-- Line items -->
+            <table  class="darkFont" id="table_lineitems">
+                <tr colspan="9" width="100%">
+                    <td colspan="4"></td>
+                </tr>
+
+                <tr colspan="9" width="100%">
+                    <td colspan="4"></td>
+                </tr>
+                <tr>
+                    <th class="thintopborder thinbottomborder" style="font-weight: bold;" width="10%"><b>Start Date</b></th>
+                    <th class="thintopborder thinbottomborder thinleftborder" width="10%"><b>End Date</b></th>
+                    <th class="thintopborder thinbottomborder thinleftborder" width="20%"><b>Deliverable</b></th>
+                    <th class="thintopborder thinbottomborder thinleftborder" width="20%"><b>Ad Dimension</b></th>
+                    <th class="thintopborder thinbottomborder thinleftborder" width="5%"><b>Cost Method</b></th>
+                    <th class="thintopborder thinbottomborder thinleftborder" width="5%"><b>Rate</b></th>
+                    <th class="right thintopborder thinbottomborder thinleftborder" width="5%"><b>Impressions</b></th>
+                    <th class="right thintopborder thinbottomborder thinleftborder" width="5%"><b>Budget</b></th>
+                    <th class="thintopborder thinbottomborder thinleftborder" width="20%"><b>Comments</b></th>
+                </tr>
+
+                <apex:repeat var="oli" value="{!sortrecord}" >
+                <tr class="thinbottomborder">
+                    
+                    <td><apex:outputText value="{0,date,dd-MM-yyyy}"><apex:param value="{!oli.from_Date__c}"/></apex:outputText></td>
+                    
+                    <td class="thinleftborder"><apex:outputText value="{0,date,dd-MM-yyyy}"><apex:param value="{!oli.until_Date__c}"/></apex:outputText></td>
+                    
+                    <td class="thinleftborder">{!oli.DefaultLineDescription__c}</td>
+
+                    <td class="thinleftborder">{!oli.PriceBookEntry.Product2.Advertising_Medium__r.Dart_AdSlotSize__c}</td>
+
+                    <td class="thinleftborder">{!oli.Billing_Category__c}</td>
+                    
+                    <td class="thinleftborder right"><apex:OutputField value="{!oli.SalesPriceBeforeID__c}"/></td>
+                    
+                    <td class="thinleftborder right"><apex:outputText value="{0, number, ###,###,###,###}"><apex:param value="{!oli.Quantity}"/></apex:outputText></td>
+
+                    <td class="thinleftborder right"><apex:OutputField value="{!oli.TotalAmountBeforeID__c}"/></td>
+                    
+                    <td class="thinleftborder"><apex:OutputField value="{!oli.AdOpsComments__c}"/></td>
+
+                </tr>
+                </apex:repeat>
+
+                <tr colspan="9" width="100%">
+                    <td class="thinbottomborder" colspan="9"></td>
+                </tr>
+
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>Totals</b></td>
+                    <td colspan="2" class="right thinbottomborder"><apex:outputField value="{!Opportunity.TotalAmountBeforeID__c}"/></td>
+                </tr>
+                <apex:outputPanel rendered="{!Opportunity.IndirectDiscount__c>0}" layout="none">
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>Agency Discount ({!Opportunity.IndirectDiscount__c}%)</b></td>
+                    <td colspan="2" class="right thinbottomborder"><apex:outputField value="{!Opportunity.IndirectDiscountAmount__c}"/></td>
+                </tr>
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>Net Contract Amount</b></td>
+                    <td colspan="2" class="right thinbottomborder"><apex:outputField value="{!Opportunity.TotalAmountNet__c}"/></td>
+                </tr>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!Opportunity.Billing_Account__r.Apply_VAT__c}" layout="none">
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>GST ({!Opportunity.Billing_Account__r.VAT__c}%)</b></td>
+                    <td colspan="2" class="right thinbottomborder"><apex:outputField value="{!Opportunity.VatAmount__c}"/></td>
+                </tr>
+                <tr>
+                    <td colspan="5"></td>
+                    <td colspan="2" class="right thinbottomborder"><b>Total Due (ZAR)</b></td>
+                    <td colspan="2" class="right thinbottomborder"><apex:outputText value="{0, number, currency}"><apex:param value="{!Opportunity.TotalAmountNet__c+Opportunity.VatAmount__c}"/></apex:outputText></td>
+                </tr>
+                </apex:outputPanel>
+
+            </table><!-- End Line items -->
+            <br/>
+            <br/>
+            <!-- Notes -->
+            <table  class="darkFont" id="table_notes">
+                <tr>
+                    <th class="left sectionHeader thintopborder thinbottomborder" width="35%"><b>IO Comments</b></th>
+                </tr>
+
+                <tr >
+                    <td >{!Opportunity.Description}</td>
+                </tr>
+            </table>
+            <!-- End Notes -->
+
+            <br/>
+            <br/>
+
+            <!-- Contract Acknowledgment -->
+            <table class="darkFont" id="table_ContractAck">
+                <tr>
+                    <th class="left sectionHeader thintopborder thinbottomborder" width="100%"><b>Contract Acknowledgment</b></th>
+                </tr>
+                <tr>
+                    <td width="100%">
+                        <p>
+                            <b>This is not an invoice; invoice will follow.  Fees shall exclude anay applicable taxes such as but not limited to income, gross receipts, sales, use, ad valorem, value added, franchise, profits, withholding, excise, stamp, business, occupation, customs, duties or similar fees.  Any applicable taxes are the responsibility of Advertiser.</b>
+                        </p>
+                        <br/>
+                        <br/>
+                        <p>
+                            This Advertising Insertion Order is between Gumtree South Africa (Pty) Limited (“Company”) and Advertiser.  The body of this Advertising Insertion Order, together with the attached Standard Terms and Conditions for Advertising with Gumtree.za (collectively, this “Agreement”) set forth the entire agreement and understanding between the parties as to the subject matter hereof and supersedes all prior discussions, agreements and understandings of any kind, and every nature between them.  This Agreement shall be binding upon both parties upon Advertiser’s signature below, which demonstrates acceptance of the terms and conditions of the Agreement and the commercial offer given by Company.  Company consents to electronic transmission (e-mail, fax or otherwise) as acceptable means to constitute a written acceptance of an authorized person for Advertiser.
+                        </p>
+                        <br/>
+                        <br/>
+                        <p>
+                            Advertiser has read, understands and agrees to this Agreement:  
+                        </p>
+                    </td>
+                </tr>
+            </table>
+            <!-- End Contract Acknowledgment -->
+
+            <br/>
+            <br/>
+
+            <table class="darkFont" width="100%" id="table5">
+
+                <tr>
+                    <td width="50%">Agency/Advertiser (Full Corporate Name): </td>
+                    <td width="50%"><apex:outputField value="{!Opportunity.Account.Name}"/></td>
+                </tr>
+                <tr>
+                    <td>Total</td>
+                    <td><apex:outputText value="{0, number, currency}"><apex:param value="{!Opportunity.TotalAmountNet__c+Opportunity.VatAmount__c}"/></apex:outputText></td>
+                </tr>
+                <tr>
+                    <td>Print Name:</td>
+                    <td>{{_es_signer_fullname}}</td>
+                </tr>
+                <tr>
+                    <td>Print Title:</td>
+                    <td class="echosign_container">{{*_es_signer_title}}</td>
+                </tr>
+                <tr>
+                    <td>Signature:</td>
+                    <td class="echosign_container">{{_es_signer_signature}}</td>
+                </tr>
+                <tr>
+                    <td>Date:</td>
+                    <td class="echosign_container" >{{_es_signer_date}}</td>
+                </tr>
+
+            </table>
+        </div>
+    </body>
+</html>
+</apex:page>
